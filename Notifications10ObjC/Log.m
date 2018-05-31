@@ -19,18 +19,6 @@ void append(NSString *msg){
     [handle closeFile];
 }
 
-void logWithTime(NSString *logMessage)
-{
-
-    NSDate * now = [NSDate date];
-    NSDateFormatter *outputFormatter = [[NSDateFormatter alloc] init];
-    [outputFormatter setDateFormat:@"HH:mm:ss"];
-    NSString *dateTimeString = [outputFormatter stringFromDate:now];
-    
-    NSString *joinString=[NSString stringWithFormat:@"%@|%@",dateTimeString,  logMessage];
-    
-    NSLog(joinString);
-}
 
 
 void _Log(NSString *prefix, const char *file, int lineNumber, const char *funcName, NSString *format,...) {
@@ -40,7 +28,15 @@ void _Log(NSString *prefix, const char *file, int lineNumber, const char *funcNa
     NSString *msg = [[NSString alloc] initWithFormat:[NSString stringWithFormat:@"%@",format] arguments:ap];
     va_end (ap);
     fprintf(stderr,"%s%50s:%3d - %s",[prefix UTF8String], funcName, lineNumber, [msg UTF8String]);
-    append(msg);
+    
+    NSDate * now = [NSDate date];
+    NSDateFormatter *outputFormatter = [[NSDateFormatter alloc] init];
+    [outputFormatter setDateFormat:@"HH:mm:ss"];
+    NSString *dateTimeString = [outputFormatter stringFromDate:now];
+    
+    NSString *msgWithTime=[NSString stringWithFormat:@"%@|%@",dateTimeString,  msg];
+    
+    append(msgWithTime);
    // [msg release];
 }
 @end

@@ -35,7 +35,7 @@
     id fileHandle = [NSFileHandle fileHandleForWritingAtPath:@"/NSLog.txt"];
     if (!fileHandle)
     {
-        logWithTime(@"Opening log failed");
+        NSLog(@"Opening log failed");
         return NO;
     }
    // [fileHandle retain];
@@ -43,7 +43,7 @@
     // Redirect stderr
     int err = dup2([fileHandle fileDescriptor], STDERR_FILENO);
     if (!err) {
-        logWithTime(@"Couldn't redirect stderr");
+        NSLog(@"Couldn't redirect stderr");
         return NO;
         
     }
@@ -69,7 +69,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-logWithTime(@"viewDidLoad");
+NSLog(@"viewDidLoad");
     _pushNotificationText2.text = @"";
     //Instatiating Appdelegate
     if(!appdelegate)

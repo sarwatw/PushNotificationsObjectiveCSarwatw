@@ -50,11 +50,11 @@
                      [[UIApplication sharedApplication] registerForRemoteNotifications];
                  });
 
-                 logWithTime(@"Push registration success.");
+                 NSLog(@"Push registration success.");
              }
              else
              {
-                 logWithTime( @"Push registration FAILED" );
+                 NSLog( @"Push registration FAILED" );
                  NSLog( @"ERROR: %@ - %@", error.localizedFailureReason, error.localizedDescription );
                  NSLog( @"SUGGESTIONS: %@ - %@", error.localizedRecoveryOptions, error.localizedRecoverySuggestion );
              }
@@ -97,14 +97,14 @@
 - (void)applicationDidBecomeActive:(UIApplication *)application {
     // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
    
-    logWithTime(@"In applicationDidBecomeActive");
+    NSLog(@"In applicationDidBecomeActive");
 
 }
 
 
 - (void)applicationWillTerminate:(UIApplication *)application {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
-        logWithTime(@"In applicationWillTerminate");
+        NSLog(@"In applicationWillTerminate");
 }
 
 #pragma mark - Remote Notification Delegate // <= iOS 9.x
@@ -113,7 +113,7 @@
 - (void)requestAuthorizationWithOptions:(UNAuthorizationOptions)options
                       completionHandler:(void (^)(BOOL granted, NSError *error))completionHandler{
     
-    logWithTime(@"In requestAuthorizationWithOptions");
+    NSLog(@"In requestAuthorizationWithOptions");
 
 }
 
@@ -132,7 +132,7 @@ fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
     NSDateFormatter *outputFormatter = [[NSDateFormatter alloc] init];
     [outputFormatter setDateFormat:@"HH:mm:ss"];
     _timeString = [outputFormatter stringFromDate:now];
-    logWithTime(@"Received remote notification");
+    NSLog(@"Received remote notification");
 
     [[NSNotificationCenter defaultCenter] postNotificationName:@"notificationCameIn" object:nil];
     
