@@ -1,0 +1,20 @@
+Push registration success.
+viewDidLoad
+In applicationDidBecomeActive
+Device Token = e96d46645e2da57e227b0ed5939d18cecab69ba58e88089c34638027c4670de9
+Received remote notification at 11:39:20
+Push registration success.
+viewDidLoad
+In applicationDidBecomeActive
+Device Token = e96d46645e2da57e227b0ed5939d18cecab69ba58e88089c34638027c4670de9
+Push registration success.
+viewDidLoad
+In applicationDidBecomeActive
+Device Token = e96d46645e2da57e227b0ed5939d18cecab69ba58e88089c34638027c4670de9
+12:43:59|Push registration success.
+12:43:59|viewDidLoad
+12:43:59|Received remote notification
+Device Token = e96d46645e2da57e227b0ed5939d18cecab69ba58e88089c34638027c4670de9
+12:44:20|In applicationDidBecomeActive
+12:44:33|Received remote notification
+12:45:13|Received remote notification

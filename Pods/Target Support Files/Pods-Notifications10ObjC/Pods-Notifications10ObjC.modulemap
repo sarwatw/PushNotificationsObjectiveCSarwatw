@@ -1,0 +1,6 @@
+module Pods_Notifications10ObjC {
+  umbrella header "Pods-Notifications10ObjC-umbrella.h"
+
+  export *
+  module * { export * }
+}
