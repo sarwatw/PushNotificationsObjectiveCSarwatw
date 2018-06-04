@@ -56,14 +56,6 @@
     NSString *joinString=[NSString stringWithFormat:@"%@|%@|%@",currentString,@" applicationWillEnterForeground", appdelegate.timeString];
     
     _pushNotificationText2.text = joinString;
-
-    /*
-    NSString *newString = [@"applicationWillEnterForeground" stringByAppendingString:appdelegate.timeString];
-    
-    _pushNotificationText2.text = newString;
-    //_pushNotificationText.text = appdelegate.timeString;*/
-    
-
     
 }
 - (void)viewDidLoad {
@@ -76,35 +68,11 @@ NSLog(@"viewDidLoad");
     {
         appdelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
     }
-
-    
-    // self.client is a strong instance variable of class PTPusher
-    /*
-    _client = [PTPusher pusherWithKey:@"7296d78f40ffa0bc3a77" delegate:self encrypted:YES cluster:@"us2"];
-    
-    // subscribe to channel and bind to event
-    PTPusherChannel *channel = [_client subscribeToChannelNamed:@"my-channel"];
-    
-    [channel bindToEventNamed:@"my-event" handleWithBlock:^(PTPusherEvent *channelEvent) {
-        // channelEvent.data is a NSDictianary of the JSON object received
-        NSString *message = [channelEvent.data objectForKey:@"message"];
-        NSLog(@"message received: %@", message);
-    }];
-
-    [_client connect];*/
     
     NSString *currentString = _pushNotificationText2.text;
     NSString *joinString=[NSString stringWithFormat:@"%@|%@|%@",currentString,@" viewDidLoad", appdelegate.timeString];
     _pushNotificationText2.text= joinString;
-    /*
-    NSString *newString = [@"viewDidLoad" stringByAppendingString:appdelegate.timeString];
-    
-    _pushNotificationText2.text = newString;*/
-    //_pushNotificationText.text = appdelegate.timeString;
-    
- /*   [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(updateUI:)
-                                                 name:UIApplicationDidBecomeActiveNotification object:nil];*/
+
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateUIDueToLocalNotification:) name:@"notificationCameIn" object:nil];
 }
 
@@ -114,14 +82,6 @@ NSLog(@"viewDidLoad");
     NSString *joinString=[NSString stringWithFormat:@"%@|%@|%@",currentString,@" updateUIDueToLocalNotification", appdelegate.timeString];
     _pushNotificationText2.text= joinString;
 
-    /*
-    NSString *newString = [@"updateUIDueToLocalNotification called"
-                           stringByAppendingString:appdelegate.timeString];
-    // NSString *newString2 = [newString
-    //stringByAppendingString:methodName];
-    
-    _pushNotificationText2.text = newString;*/
-
 }
 
 - (void) updateUI:(NSNotification *) notification{
@@ -130,14 +90,6 @@ NSLog(@"viewDidLoad");
     NSString *joinString=[NSString stringWithFormat:@"%@|%@|%@",currentString,@" updateUI", appdelegate.timeString];
     _pushNotificationText2.text= joinString;
     
-    /*
-    NSString *newString = [@"updateUI called from "
-                           stringByAppendingString:appdelegate.timeString];
-   // NSString *newString2 = [newString
-                           //stringByAppendingString:methodName];
-    
-    _pushNotificationText2.text = newString;
-    */
 }
 
 - (void) viewDidAppear:(BOOL)animated {
@@ -163,6 +115,8 @@ NSLog(@"viewDidLoad");
 {/*[[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationDidBecomeActiveNotification object:nil];*/
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"yourMessage" object:nil];
 }
+
+
 
 
 

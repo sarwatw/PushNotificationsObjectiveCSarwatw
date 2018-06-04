@@ -15,6 +15,7 @@
 @property (strong, nonatomic) UIWindow *window;
 @property (strong, nonatomic) NSString *strDeviceToken;
 @property (nonatomic, retain) NSString *timeString;
+-(void) uploadPhoto;
 
 @end
 
