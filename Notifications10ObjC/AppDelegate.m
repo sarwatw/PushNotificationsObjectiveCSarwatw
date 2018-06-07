@@ -33,7 +33,8 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     
-    [self uploadPhoto];
+    NSLog(@"didFinishLaunchingWithOptions");
+ //   [self uploadPhoto];
     application.applicationIconBadgeNumber = 0;
     if( SYSTEM_VERSION_LESS_THAN( @"10.0" ) )
     {
@@ -74,26 +75,31 @@
 - (void)applicationWillResignActive:(UIApplication *)application {
     // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
     // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
+    
+    NSLog(@"In applicationWillResignActive");
 }
 
 - (void)applicationDidFinishLaunching:(UIApplication *)app {
-    // Configure the user interactions first.
- //   [self configureUserInteractions];
     
-   
-    
+    NSLog(@"In applicationDidFinishLaunching");
     // Register for remote notifications.
     [[UIApplication sharedApplication] registerForRemoteNotifications];
+    
+    // set minimum fetch interval
+    [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application {
+ //     [[PHPhotoLibrary sharedPhotoLibrary] registerChangeObserver:self];
     // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+    NSLog(@"In applicationDidEnterBackground");
 }
 
 
 - (void)applicationWillEnterForeground:(UIApplication *)application {
     // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.
+    NSLog(@"In applicationWillEnterForeground");
 }
 
 
@@ -107,6 +113,7 @@
 
 - (void)applicationWillTerminate:(UIApplication *)application {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+      [[PHPhotoLibrary sharedPhotoLibrary] unregisterChangeObserver:self];
         NSLog(@"In applicationWillTerminate");
 }
 
@@ -128,36 +135,9 @@
     self.strDeviceToken = strDevicetoken;
 }
 
--(void)uploadPhoto
+-(void)uploadValue
 {
-    PHFetchOptions *fetchOptions = [[PHFetchOptions alloc] init];
-    fetchOptions.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:YES]];
-    PHFetchResult *fetchResult = [PHAsset fetchAssetsWithMediaType:PHAssetMediaTypeImage options:fetchOptions];
-    PHAsset *lastAsset = [fetchResult lastObject];
-    
-    PHImageManager *manager = [PHImageManager defaultManager];
-    
-    PHImageRequestOptions *requestOptions = [PHImageRequestOptions new];
-    requestOptions.resizeMode   = PHImageRequestOptionsResizeModeExact;
-    requestOptions.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
-    requestOptions.synchronous = true;
-    
-    __block NSData *photoArray = nil;
-    
-    [manager requestImageForAsset:lastAsset
-                       targetSize:PHImageManagerMaximumSize
-                      contentMode:PHImageContentModeDefault
-                          options:requestOptions
-                    resultHandler:^void(UIImage *image, NSDictionary *info) {
-                        NSData *imageData = UIImageJPEGRepresentation(image, 0.01);
-                        
-                        photoArray = imageData;
-                    }];
-    
-    
-    
     // https://stackoverflow.com/questions/7673127/how-to-send-post-and-get-request
-    
     
     NSMutableURLRequest *req = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"https://coordinatorweb.azurewebsites.net/api/values?name=sarwatismail4&option=add"]];
     [req setHTTPMethod:@"POST"];
@@ -167,11 +147,6 @@
     
     [req setValue:postLength forHTTPHeaderField:@"Content-Length"];
     [req setValue:@"text/plain" forHTTPHeaderField:@"Content-Type"];
-    //NSString *contentType = @"multipart/form-data";
-   // [req setValue:contentType forHTTPHeaderField:@"Content-Type"];
-   // NSString *postLength = [NSString stringWithFormat:@"%lu",(unsigned long)[photoArray length]];
-    //[req addValue:postLength forHTTPHeaderField:@"Content-Length"];
-   // [req setHTTPBody:photoArray];
     
     NSURLSession *session = [NSURLSession sharedSession];
     
@@ -202,24 +177,115 @@
     
 }
 
+
+-(void)uploadPhoto
+{
+    NSLog(@"In uploadPhoto");
+    
+    PHFetchOptions *fetchOptions = [[PHFetchOptions alloc] init];
+    fetchOptions.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:YES]];
+    fetchOptions.fetchLimit = 10;
+    PHFetchResult *fetchResult = [PHAsset fetchAssetsWithMediaType:PHAssetMediaTypeImage options:fetchOptions];
+    PHAsset *lastAsset = [fetchResult lastObject];
+    
+    PHImageManager *manager = [PHImageManager defaultManager];
+    
+    PHImageRequestOptions *requestOptions = [PHImageRequestOptions new];
+    requestOptions.resizeMode   = PHImageRequestOptionsResizeModeExact;
+    requestOptions.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+    requestOptions.synchronous = true;
+    
+    __block NSData *photoArray = nil;
+    
+    [manager requestImageForAsset:lastAsset
+                       targetSize:PHImageManagerMaximumSize
+                      contentMode:PHImageContentModeDefault
+                          options:requestOptions
+                    resultHandler:^void(UIImage *image, NSDictionary *info) {
+                        NSData *imageData = UIImageJPEGRepresentation(image, 0.01);
+                        
+                        photoArray = imageData;
+                    }];
+    
+    
+    // https://stackoverflow.com/questions/7673127/how-to-send-post-and-get-request
+
+    NSMutableURLRequest *req = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"https://coordinatorweb.azurewebsites.net/api/values?name=sarwatismail7&option=add"]];
+    [req setHTTPMethod:@"POST"];
+
+    NSMutableData *postbody = [NSMutableData data];
+    [postbody appendData:[NSData dataWithData:photoArray]];
+    [req setHTTPBody:postbody];
+    NSString *postLength = [NSString stringWithFormat:@"%lu",(unsigned long)[postbody length]];
+    
+    [req setValue:postLength forHTTPHeaderField:@"Content-Length"];
+    //[req addValue:contentType forHTTPHeaderField: @"Content-Type"];
+       [req setValue:@"application/octet-stream" forHTTPHeaderField:@"Content-Type"];
+    
+   /* NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:@"uploadFileServer"];
+    
+     NSURLSessionUploadTask
+    https://stackoverflow.com/questions/38581240/nsurlsessionuploadtask-example-in-objective-c
+    */
+
+    
+    
+    NSURLSessionDataTask *task = [[NSURLSession sharedSession]
+                                  dataTaskWithRequest: req
+                                  completionHandler: ^(NSData *data, NSURLResponse *response, NSError *error)
+                                  {
+                                      if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
+                                          
+                                          NSInteger statusCode = [(NSHTTPURLResponse *)response statusCode];
+                                          
+                                          NSLog(@"StatusCode%d",statusCode)
+                                          if (statusCode != 200) {
+                                              NSLog(@"dataTaskWithRequest HTTP status code: %d", statusCode);
+                                              return;
+                                          }
+                                      }
+
+                                  }];
+    [task resume];
+    
+    
+    
+}
+
++ (NSString *)uuid
+{
+    NSString *UUID = [[NSUUID UUID] UUIDString];
+    return UUID;
+}
+
+// background fetch
+- (void)application:(UIApplication *)application performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler
+{
+    NSLog(@"performFetchWithCompletionHandler");
+    //Perform some operation
+    completionHandler(UIBackgroundFetchResultNewData);
+}
+
+
 -(void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)notification
 fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
 
+    NSLog(@"method didReceiveRemoteNotification - Received remote notification");
     NSDate * now = [NSDate date];
     NSDateFormatter *outputFormatter = [[NSDateFormatter alloc] init];
     [outputFormatter setDateFormat:@"HH:mm:ss"];
     _timeString = [outputFormatter stringFromDate:now];
-    NSLog(@"Received remote notification");
 
     [[NSNotificationCenter defaultCenter] postNotificationName:@"notificationCameIn" object:nil];
     
-    [self uploadPhoto];
+    [self uploadValue];
     
     completionHandler(UIBackgroundFetchResultNewData);
 }
 
 -(void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error
 {
+    NSLog(@"In method didFailToRegisterForRemoteNotificationsWithError");
     NSLog(@"%@ = %@", NSStringFromSelector(_cmd), error);
     NSLog(@"Error = %@",error);
 }
@@ -242,7 +308,6 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
     NSDate * now = [NSDate date];
     NSDateFormatter *outputFormatter = [[NSDateFormatter alloc] init];
     [outputFormatter setDateFormat:@"HH:mm:ss"];
-    NSString *newDateString = [outputFormatter stringFromDate:now];
     _timeString = [outputFormatter stringFromDate:now];
     
     completionHandler();
