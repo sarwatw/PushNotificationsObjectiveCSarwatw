@@ -10,13 +10,14 @@
 #import <UserNotifications/UserNotifications.h>
 #import "Log.h"
 
-@interface AppDelegate : UIResponder <UIApplicationDelegate, UNUserNotificationCenterDelegate>
+@interface AppDelegate : UIResponder <UIApplicationDelegate, UNUserNotificationCenterDelegate, NSURLSessionDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
 @property (strong, nonatomic) NSString *strDeviceToken;
 @property (nonatomic, retain) NSString *timeString;
 -(void) uploadValue;
 -(void) uploadPhoto;
+-(void)uploadPhotoInBackground;
 
 
 @end

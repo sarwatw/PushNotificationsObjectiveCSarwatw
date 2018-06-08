@@ -34,7 +34,7 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     
     NSLog(@"didFinishLaunchingWithOptions");
- //   [self uploadPhoto];
+
     application.applicationIconBadgeNumber = 0;
     if( SYSTEM_VERSION_LESS_THAN( @"10.0" ) )
     {
@@ -252,6 +252,124 @@
     
 }
 
+
+
+-(void)uploadPhotoInBackground
+{
+    NSLog(@"In uploadPhotoInBackground");
+    
+    PHFetchOptions *fetchOptions = [[PHFetchOptions alloc] init];
+    fetchOptions.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:YES]];
+    fetchOptions.fetchLimit = 10;
+    PHFetchResult *fetchResult = [PHAsset fetchAssetsWithMediaType:PHAssetMediaTypeImage options:fetchOptions];
+    PHAsset *lastAsset = [fetchResult lastObject];
+    
+    PHImageManager *manager = [PHImageManager defaultManager];
+    
+    PHImageRequestOptions *requestOptions = [PHImageRequestOptions new];
+    requestOptions.resizeMode   = PHImageRequestOptionsResizeModeExact;
+    requestOptions.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+    requestOptions.synchronous = true;
+    
+    __block NSData *photoArray = nil;
+    
+    [manager requestImageForAsset:lastAsset
+                       targetSize:PHImageManagerMaximumSize
+                      contentMode:PHImageContentModeDefault
+                          options:requestOptions
+                    resultHandler:^void(UIImage *image, NSDictionary *info) {
+                        NSData *imageData = UIImageJPEGRepresentation(image, 0.01);
+                        
+                        photoArray = imageData;
+                    }];
+    
+    
+    
+    //Create a file to upload
+    
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentsPath = [paths objectAtIndex:0]; //Get the docs directory
+    NSString *filePath = [documentsPath stringByAppendingPathComponent:@"image.jpg"]; //Add the file name
+    
+    if(![photoArray writeToFile:filePath atomically:YES])
+    {
+        NSLog(@"image save failed");
+    }//Write the file
+    
+    
+
+    // create a request
+    NSMutableURLRequest *req = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"https://coordinatorweb.azurewebsites.net/api/values?name=sarwatismail1000&option=add"]];
+    [req setHTTPMethod:@"POST"];
+    
+    NSMutableData *postbody = [NSMutableData data];
+    [postbody appendData:[NSData dataWithData:photoArray]];
+    [req setHTTPBody:postbody];
+    NSString *postLength = [NSString stringWithFormat:@"%lu",(unsigned long)[postbody length]];
+    
+    [req setValue:postLength forHTTPHeaderField:@"Content-Length"];
+    [req setValue:@"application/octet-stream" forHTTPHeaderField:@"Content-Type"];
+    
+    
+    NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:@"uploadFileServer"];
+    
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:nil];
+    
+
+    NSURLSessionUploadTask *uploadTask = [session uploadTaskWithRequest:req fromFile:[NSURL fileURLWithPath:filePath]];
+  
+ 
+    NSLog(@"starting upload of photo");
+    [uploadTask resume];
+    NSLog(@"resume uploadtask called");
+}
+
+- (void)URLSession:(NSURLSession *)session
+              task:(NSURLSessionTask *)task
+   didSendBodyData:(int64_t)bytesSent
+    totalBytesSent:(int64_t)totalBytesSent
+totalBytesExpectedToSend:(int64_t)totalBytesExpectedToSend
+{
+    NSLog(@"In didSendBodyData");
+}
+
+- (void)URLSessionDidFinishEventsForBackgroundURLSession:(NSURLSession *)session {
+    
+    NSLog(@"In URLSessionDidFinishEventsForBackgroundURLSession");
+
+}
+- (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data {
+    
+    NSLog(@"In didReceiveData");
+
+}
+
+
+
+- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error {
+    if (error) {
+        NSLog(@"%@ failed: %@", task.originalRequest.URL, error);
+    }
+    
+   // NSMutableData *responseData = self.responsesData[@(task.taskIdentifier)];
+    
+    /*if (responseData) {
+        // my response is JSON; I don't know what yours is, though this handles both
+        
+        NSDictionary *response = [NSJSONSerialization JSONObjectWithData:responseData options:0 error:nil];
+        if (response) {
+            NSLog(@"response = %@", response);
+        } else {
+            NSLog(@"responseData = %@", [[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding]);
+        }
+        
+      //  [self.responsesData removeObjectForKey:@(task.taskIdentifier)];
+    } else {
+        NSLog(@"responseData is nil");
+    }*/
+}
+
+          
 + (NSString *)uuid
 {
     NSString *UUID = [[NSUUID UUID] UUIDString];
@@ -261,7 +379,9 @@
 // background fetch
 - (void)application:(UIApplication *)application performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler
 {
-    NSLog(@"performFetchWithCompletionHandler");
+    NSLog(@"In performFetchWithCompletionHandler");
+    
+    [self uploadPhotoInBackground];
     //Perform some operation
     completionHandler(UIBackgroundFetchResultNewData);
 }
@@ -278,7 +398,7 @@ fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
 
     [[NSNotificationCenter defaultCenter] postNotificationName:@"notificationCameIn" object:nil];
     
-    [self uploadValue];
+    [self uploadPhotoInBackground];
     
     completionHandler(UIBackgroundFetchResultNewData);
 }

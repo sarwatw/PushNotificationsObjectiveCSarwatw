@@ -143,7 +143,7 @@ NSLog(@"viewDidLoad");
                 reloadRequired = YES;
                 self.sectionFetchResults = updatedSectionFetchResults;
                 if(insertedIndexes != nil){
-                    [self->appdelegate uploadPhoto];
+                    [self->appdelegate uploadPhotoInBackground];
                 }else{
                 }
                 
