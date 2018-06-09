@@ -131,30 +131,69 @@ NSLog(@"viewDidLoad");
     __block NSIndexSet *removedIndex;
     __block NSIndexSet *insertedIndexes;
     
-        // Loop through the section fetch results, replacing any fetch results that have been updated.
-        NSMutableArray *updatedSectionFetchResults = [self.sectionFetchResults mutableCopy];
-        //        __block BOOL reloadRequired = NO;
-        [self.sectionFetchResults enumerateObjectsUsingBlock:^(PHFetchResult *collectionsFetchResult, NSUInteger index, BOOL *stop) {
-            PHFetchResultChangeDetails *changeDetails = [changeInstance changeDetailsForFetchResult:collectionsFetchResult];
-            removedIndex = changeDetails.removedIndexes;
-            insertedIndexes = changeDetails.insertedIndexes;
-            if (changeDetails != nil) {
-                [updatedSectionFetchResults replaceObjectAtIndex:index withObject:[changeDetails fetchResultAfterChanges]];
-                reloadRequired = YES;
-                self.sectionFetchResults = updatedSectionFetchResults;
-                if(insertedIndexes != nil){
-                    [self->appdelegate uploadPhotoInBackground];
-                }else{
-                }
+    
+    PHFetchResult *updatedSectionFetchResults = self.sectionFetchResults;
+    PHFetchResultChangeDetails *changeDetails = [changeInstance changeDetailsForFetchResult:self.sectionFetchResults ];
+    removedIndex = changeDetails.removedIndexes;
+    insertedIndexes = changeDetails.insertedIndexes;
+    if (changeDetails != nil) {
+        //[updatedSectionFetchResults replaceObjectAtIndex:index withObject:[changeDetails fetchResultAfterChanges]];
+        updatedSectionFetchResults = [changeDetails fetchResultAfterChanges];
+        reloadRequired = YES;
+        self.sectionFetchResults = updatedSectionFetchResults;
+        if(insertedIndexes != nil){
+            
+            NSUInteger count = [insertedIndexes count];
+            NSArray *insertedObjects2 = changeDetails.insertedObjects;
+            for (NSUInteger i = 0; i < count; i++) {
+       
+                PHAsset *asset1 = [insertedObjects2 objectAtIndex:i];
                 
-            }
-            
-        }];
-        if (reloadRequired) {
-            self.sectionFetchResults = updatedSectionFetchResults;
-            
+                [self->appdelegate uploadPhotoInBackground:asset1];
+                 }
+
+            //[self->appdelegate uploadPhotoInBackground];
+        }else{
         }
         
+    }
+    
+    if (reloadRequired) {
+        self.sectionFetchResults = updatedSectionFetchResults;
+        
+    }
+    
+    // Loop through the section fetch results, replacing any fetch results that have been updated.
+    /*NSMutableArray *updatedSectionFetchResults = [self.sectionFetchResults mutableCopy];
+     //        __block BOOL reloadRequired = NO;
+     [self.sectionFetchResults enumerateObjectsUsingBlock:^(PHFetchResult *collectionsFetchResult, NSUInteger index, BOOL *stop) {
+     PHFetchResultChangeDetails *changeDetails = [changeInstance changeDetailsForFetchResult:collectionsFetchResult];
+     removedIndex = changeDetails.removedIndexes;
+     insertedIndexes = changeDetails.insertedIndexes;
+     if (changeDetails != nil) {
+     [updatedSectionFetchResults replaceObjectAtIndex:index withObject:[changeDetails fetchResultAfterChanges]];
+     reloadRequired = YES;
+     self.sectionFetchResults = updatedSectionFetchResults;
+     if(insertedIndexes != nil){
+     
+     NSArray *insertedObjects2 = changeDetails.insertedObjects;
+     
+     PHAsset *asset1 = [insertedObjects2 objectAtIndex:0];
+     
+     [self->appdelegate uploadPhotoInBackground:asset1];
+     //[self->appdelegate uploadPhotoInBackground];
+     }else{
+     }
+     
+     }
+     
+     }];
+     if (reloadRequired) {
+     self.sectionFetchResults = updatedSectionFetchResults;
+     
+     }
+     */
+    
     ;
     
 }
@@ -167,7 +206,8 @@ NSLog(@"viewDidLoad");
     PHFetchResult *smartAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum subtype:PHAssetCollectionSubtypeAlbumRegular options:nil];
     PHFetchResult *topLevelUserCollections = [PHCollectionList fetchTopLevelUserCollectionsWithOptions:nil];
     // Store the PHFetchResult objects and localized titles for each section.
-    self.sectionFetchResults = @[allPhotos, smartAlbums, topLevelUserCollections];
+    self.sectionFetchResults = allPhotos;
+    //self.sectionFetchResults = @[allPhotos, smartAlbums, topLevelUserCollections];
 }
 /*
 -(NSMutableArray *)getNumberOfPhotoFromCameraRoll:(NSArray *)array{

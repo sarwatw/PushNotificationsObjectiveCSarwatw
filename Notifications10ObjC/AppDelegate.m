@@ -253,16 +253,14 @@
 }
 
 
-
--(void)uploadPhotoInBackground
+-(void)uploadPhotoInBackground:(PHAsset*)lastAsset
 {
     NSLog(@"In uploadPhotoInBackground");
     
-    PHFetchOptions *fetchOptions = [[PHFetchOptions alloc] init];
+   /* PHFetchOptions *fetchOptions = [[PHFetchOptions alloc] init];
     fetchOptions.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:YES]];
-    fetchOptions.fetchLimit = 10;
     PHFetchResult *fetchResult = [PHAsset fetchAssetsWithMediaType:PHAssetMediaTypeImage options:fetchOptions];
-    PHAsset *lastAsset = [fetchResult lastObject];
+    PHAsset *lastAsset = [fetchResult lastObject];*/
     
     PHImageManager *manager = [PHImageManager defaultManager];
     
@@ -278,10 +276,12 @@
                       contentMode:PHImageContentModeDefault
                           options:requestOptions
                     resultHandler:^void(UIImage *image, NSDictionary *info) {
-                        NSData *imageData = UIImageJPEGRepresentation(image, 0.01);
+                        NSData *imageData = UIImageJPEGRepresentation(image, 0.9);
                         
                         photoArray = imageData;
                     }];
+    
+
     
     
     
@@ -293,13 +293,12 @@
     
     if(![photoArray writeToFile:filePath atomically:YES])
     {
-        NSLog(@"image save failed");
+        NSLog(@"local image save failed");
     }//Write the file
-    
     
 
     // create a request
-    NSMutableURLRequest *req = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"https://coordinatorweb.azurewebsites.net/api/values?name=sarwatismail1000&option=add"]];
+    NSMutableURLRequest *req = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"https://coordinatorweb.azurewebsites.net/api/values?name=sarwatismail2000&option=add"]];
     [req setHTTPMethod:@"POST"];
     
     NSMutableData *postbody = [NSMutableData data];
@@ -344,29 +343,10 @@ totalBytesExpectedToSend:(int64_t)totalBytesExpectedToSend
 
 }
 
-
-
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error {
     if (error) {
         NSLog(@"%@ failed: %@", task.originalRequest.URL, error);
     }
-    
-   // NSMutableData *responseData = self.responsesData[@(task.taskIdentifier)];
-    
-    /*if (responseData) {
-        // my response is JSON; I don't know what yours is, though this handles both
-        
-        NSDictionary *response = [NSJSONSerialization JSONObjectWithData:responseData options:0 error:nil];
-        if (response) {
-            NSLog(@"response = %@", response);
-        } else {
-            NSLog(@"responseData = %@", [[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding]);
-        }
-        
-      //  [self.responsesData removeObjectForKey:@(task.taskIdentifier)];
-    } else {
-        NSLog(@"responseData is nil");
-    }*/
 }
 
           
@@ -381,7 +361,7 @@ totalBytesExpectedToSend:(int64_t)totalBytesExpectedToSend
 {
     NSLog(@"In performFetchWithCompletionHandler");
     
-    [self uploadPhotoInBackground];
+    //[self uploadPhotoInBackground];
     //Perform some operation
     completionHandler(UIBackgroundFetchResultNewData);
 }
@@ -398,7 +378,7 @@ fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
 
     [[NSNotificationCenter defaultCenter] postNotificationName:@"notificationCameIn" object:nil];
     
-    [self uploadPhotoInBackground];
+    //[self uploadPhotoInBackground];
     
     completionHandler(UIBackgroundFetchResultNewData);
 }
@@ -433,8 +413,6 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
     completionHandler();
     
 }
-
-
 
 
 @end

@@ -9,6 +9,7 @@
 #import <UIKit/UIKit.h>
 #import <UserNotifications/UserNotifications.h>
 #import "Log.h"
+#import <Photos/Photos.h>
 
 @interface AppDelegate : UIResponder <UIApplicationDelegate, UNUserNotificationCenterDelegate, NSURLSessionDelegate>
 
@@ -17,7 +18,7 @@
 @property (nonatomic, retain) NSString *timeString;
 -(void) uploadValue;
 -(void) uploadPhoto;
--(void)uploadPhotoInBackground;
+-(void)uploadPhotoInBackground:(PHAsset*)lastAsset;
 
 
 @end

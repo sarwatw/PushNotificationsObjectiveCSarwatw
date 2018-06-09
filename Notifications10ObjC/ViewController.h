@@ -13,7 +13,8 @@
 
 //@property (weak, nonatomic) IBOutlet UILabel *pushNotificationText;
 @property (weak, nonatomic) IBOutlet UITextView *pushNotificationText2;
-@property (nonatomic, strong) NSArray *sectionFetchResults;
+//@property (nonatomic, strong) NSArray *sectionFetchResults;
+@property (nonatomic, strong) PHFetchResult *sectionFetchResults;
 @property (nonatomic, strong) PHFetchResult *assetsFetchResults;
 @property (nonatomic, strong) PHAssetCollection *assetCollection;
 @property (nonatomic, strong) NSMutableArray *numberOfPhotoArray;
