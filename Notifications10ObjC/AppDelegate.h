@@ -16,10 +16,12 @@
 @property (strong, nonatomic) UIWindow *window;
 @property (strong, nonatomic) NSString *strDeviceToken;
 @property (nonatomic, retain) NSString *timeString;
++(NSString *) key;
 -(void) uploadValue;
 -(void) uploadPhoto;
--(void)uploadPhotoInBackground:(PHAsset*)lastAsset;
 
+//  - (int)addX:(int)x toY:(int)y {
+-(void)uploadPhotoInBackground:(PHAsset*)lastAsset keyName:(NSString*)keyName urlconfig:(NSURLSessionConfiguration*)nsurlconfig session:(NSURLSession*) session;
 
 @end
 

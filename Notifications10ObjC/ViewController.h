@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "Log.h"
 #import <Photos/Photos.h>
-@interface ViewController : UIViewController
+@interface ViewController : UIViewController <NSURLSessionDelegate>
 
 //@property (weak, nonatomic) IBOutlet UILabel *pushNotificationText;
 @property (weak, nonatomic) IBOutlet UITextView *pushNotificationText2;
@@ -18,6 +18,9 @@
 @property (nonatomic, strong) PHFetchResult *assetsFetchResults;
 @property (nonatomic, strong) PHAssetCollection *assetCollection;
 @property (nonatomic, strong) NSMutableArray *numberOfPhotoArray;
+@property (nonatomic, strong) NSURLSessionConfiguration *configuration;
+@property (nonatomic, strong) NSURLSession *session;
+// = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:@"uploadFileServer"];
 -(void) updateUI:(NSNotification *) notification;
 -(void) updateUIDueToLocalNotification:(NSNotification *) notification;
  //(void)handleChangedLibrary:(PHChange *)changeInstance;

@@ -253,14 +253,10 @@
 }
 
 
--(void)uploadPhotoInBackground:(PHAsset*)lastAsset
+
+-(void)uploadPhotoInBackground:(PHAsset*)lastAsset keyName:(NSString*)keyName urlconfig:(NSURLSessionConfiguration*)nsurlconfig session:(NSURLSession*) session
 {
     NSLog(@"In uploadPhotoInBackground");
-    
-   /* PHFetchOptions *fetchOptions = [[PHFetchOptions alloc] init];
-    fetchOptions.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:YES]];
-    PHFetchResult *fetchResult = [PHAsset fetchAssetsWithMediaType:PHAssetMediaTypeImage options:fetchOptions];
-    PHAsset *lastAsset = [fetchResult lastObject];*/
     
     PHImageManager *manager = [PHImageManager defaultManager];
     
@@ -282,9 +278,6 @@
                     }];
     
 
-    
-    
-    
     //Create a file to upload
     
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
@@ -298,7 +291,13 @@
     
 
     // create a request
-    NSMutableURLRequest *req = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"https://coordinatorweb.azurewebsites.net/api/values?name=sarwatismail2000&option=add"]];
+    
+    //NSString* url = @"https://coordinatorweb.azurewebsites.net/api/values?name=sarwatismail7000&option=add";
+    
+    //NSString *url = @"https://coordinatorweb.azurewebsites.net/api/values?name=SarwatWork_D8966C98-1137-460D-96C0-C60C30A2CE9E&option=add";
+    NSString *url = [NSString stringWithFormat: @"https://coordinatorweb.azurewebsites.net/api/values?name=%@&option=add", keyName];
+
+    NSMutableURLRequest *req = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:url]];
     [req setHTTPMethod:@"POST"];
     
     NSMutableData *postbody = [NSMutableData data];
@@ -310,9 +309,9 @@
     [req setValue:@"application/octet-stream" forHTTPHeaderField:@"Content-Type"];
     
     
-    NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:@"uploadFileServer"];
+ //   NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:@"uploadFileServer"];
     
-    NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:nil];
+    //NSURLSession *session = [NSURLSession sessionWithConfiguration:nsurlconfig delegate:self delegateQueue:nil];
     
 
     NSURLSessionUploadTask *uploadTask = [session uploadTaskWithRequest:req fromFile:[NSURL fileURLWithPath:filePath]];
@@ -350,10 +349,15 @@ totalBytesExpectedToSend:(int64_t)totalBytesExpectedToSend
 }
 
           
-+ (NSString *)uuid
++ (NSString *)key
 {
+    NSString *deviceName = [[UIDevice currentDevice] name];
+    NSString *deviceNameNoSpace = [deviceName stringByReplacingOccurrencesOfString:@" " withString:@""];
     NSString *UUID = [[NSUUID UUID] UUIDString];
-    return UUID;
+    NSString *keyName = [NSString stringWithFormat: @"%@_%@", deviceNameNoSpace, UUID];
+    
+    NSLog(@"KeyName is %@", keyName);
+    return keyName;
 }
 
 // background fetch
@@ -361,7 +365,8 @@ totalBytesExpectedToSend:(int64_t)totalBytesExpectedToSend
 {
     NSLog(@"In performFetchWithCompletionHandler");
     
-    //[self uploadPhotoInBackground];
+  //  NSString *keyName = [AppDelegate key];
+ //   [self uploadPhotoInBackground:nil keyName:keyName];
     //Perform some operation
     completionHandler(UIBackgroundFetchResultNewData);
 }

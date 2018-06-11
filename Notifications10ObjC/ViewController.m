@@ -69,6 +69,19 @@ NSLog(@"viewDidLoad");
         appdelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
     }
     
+    if(!_configuration)
+    {
+        _configuration = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:@"uploadFileServer"];
+
+    }
+    if(!_session)
+    {
+        _session = [NSURLSession sessionWithConfiguration:_configuration delegate:self delegateQueue:nil];
+        
+
+    }
+    
+    
     NSString *currentString = _pushNotificationText2.text;
     NSString *joinString=[NSString stringWithFormat:@"%@|%@|%@",currentString,@" viewDidLoad", appdelegate.timeString];
     _pushNotificationText2.text= joinString;
@@ -149,7 +162,9 @@ NSLog(@"viewDidLoad");
        
                 PHAsset *asset1 = [insertedObjects2 objectAtIndex:i];
                 
-                [self->appdelegate uploadPhotoInBackground:asset1];
+                NSString *key = [AppDelegate key];
+                //NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:@"uploadFileServer"];
+                [self->appdelegate uploadPhotoInBackground:asset1 keyName:key urlconfig:_configuration session:_session];
                  }
 
             //[self->appdelegate uploadPhotoInBackground];
