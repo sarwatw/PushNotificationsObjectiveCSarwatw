@@ -176,78 +176,24 @@
 }
 
 
--(PHAsset *) comparePhotosLibrary
+// verified that this method works when we use the localidentifier
+-(PHAsset *) getAssetUsingIdentifier
 {
-    
     // get file name of last taken photo
-    NSLog(@"In comparePhotosLibrary");
+    NSLog(@"In getAssetUsingIdentifier");
     
     PHFetchOptions *fetchOptions = [[PHFetchOptions alloc] init];
     fetchOptions.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:YES]];
     PHFetchResult *fetchResult = [PHAsset fetchAssetsWithMediaType:PHAssetMediaTypeImage options:fetchOptions];
     
+    // get the local identifier of the last photo taken
     PHAsset *lastAsset = [fetchResult lastObject];
     NSString *localIdentifier = lastAsset.localIdentifier;
     
+    // now get the asset using the identifier
     PHFetchResult *fetchResult2 = [PHAsset fetchAssetsWithLocalIdentifiers:@[localIdentifier] options:nil];
     PHAsset *lastAssetRetreived = [fetchResult2 lastObject];
         return lastAssetRetreived;
-    //[fetchResult2 enumerateObjectsUsingBlock:^(PHAsset *asset, NSUInteger idx, BOOL *stop) {
-        
-        //this gets called for every asset from its localIdentifier you saved
-        /*PHImageRequestOptions * imageRequestOptions = [[PHImageRequestOptions alloc] init];
-        imageRequestOptions.synchronous = YES;
-        imageRequestOptions.deliveryMode = PHImageRequestOptionsResizeModeFast;
-        
-        [[PHImageManager defaultManager]requestImageForAsset:lastAssetRetreived targetSize:CGSizeMake(50,50) contentMode:PHImageContentModeAspectFill options:imageRequestOptions resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
-            NSLog(@"get image from result");
-            
-        }];*/
-    
-
-    //}];
-    
-    
-
-    /*
-    PHImageRequestOptions * imageRequestOptions = [[PHImageRequestOptions alloc] init];
-    [[PHImageManager defaultManager]
-     requestImageDataForAsset:lastAsset
-     options:imageRequestOptions
-     resultHandler:^(NSData *imageData, NSString *dataUTI,
-                     UIImageOrientation orientation,
-                     NSDictionary *info)
-     {
-         NSLog(@"info = %@", info);
-         if ([info objectForKey:@"PHImageFileURLKey"]) {
-             
-             NSURL *path = [info objectForKey:@"PHImageFileURLKey"];
-             // if you want to save image in document see this.
-             [self saveimageindocument:imageData withimagename:[NSString stringWithFormat:@"DEMO"]];
-         }
-     }];
-
-    
-    PHImageManager *manager = [PHImageManager defaultManager];
-    
-    PHImageRequestOptions *requestOptions = [PHImageRequestOptions new];
-    requestOptions.resizeMode   = PHImageRequestOptionsResizeModeExact;
-    requestOptions.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
-    requestOptions.synchronous = true;
-    
-    __block NSData *photoArray = nil;
-    
-    [manager requestImageForAsset:lastAsset
-                       targetSize:PHImageManagerMaximumSize
-                      contentMode:PHImageContentModeDefault
-                          options:requestOptions
-                    resultHandler:^void(UIImage *image, NSDictionary *info) {
-                        NSData *imageData = UIImageJPEGRepresentation(image, 0.01);
-                        
-                        photoArray = imageData;
-                    }];
-    
-*/
 }
 
 
