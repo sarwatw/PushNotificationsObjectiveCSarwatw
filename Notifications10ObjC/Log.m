@@ -27,7 +27,7 @@ void _Log(NSString *prefix, const char *file, int lineNumber, const char *funcNa
     format = [format stringByAppendingString:@"\n"];
     NSString *msg = [[NSString alloc] initWithFormat:[NSString stringWithFormat:@"%@",format] arguments:ap];
     va_end (ap);
-    fprintf(stderr,"%s%50s:%3d - %s",[prefix UTF8String], funcName, lineNumber, [msg UTF8String]);
+    fprintf(stdout,"%s%50s:%3d - %s",[prefix UTF8String], funcName, lineNumber, [msg UTF8String]);
     
     NSDate * now = [NSDate date];
     NSDateFormatter *outputFormatter = [[NSDateFormatter alloc] init];

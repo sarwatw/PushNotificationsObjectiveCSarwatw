@@ -90,7 +90,6 @@
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application {
- //     [[PHPhotoLibrary sharedPhotoLibrary] registerChangeObserver:self];
     // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
     NSLog(@"In applicationDidEnterBackground");
@@ -113,7 +112,6 @@
 
 - (void)applicationWillTerminate:(UIApplication *)application {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
-      [[PHPhotoLibrary sharedPhotoLibrary] unregisterChangeObserver:self];
         NSLog(@"In applicationWillTerminate");
 }
 
@@ -178,6 +176,99 @@
 }
 
 
+-(PHAsset *) comparePhotosLibrary
+{
+    
+    // get file name of last taken photo
+    NSLog(@"In comparePhotosLibrary");
+    
+    PHFetchOptions *fetchOptions = [[PHFetchOptions alloc] init];
+    fetchOptions.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:YES]];
+    PHFetchResult *fetchResult = [PHAsset fetchAssetsWithMediaType:PHAssetMediaTypeImage options:fetchOptions];
+    
+    PHAsset *lastAsset = [fetchResult lastObject];
+    NSString *localIdentifier = lastAsset.localIdentifier;
+    
+    PHFetchResult *fetchResult2 = [PHAsset fetchAssetsWithLocalIdentifiers:@[localIdentifier] options:nil];
+    PHAsset *lastAssetRetreived = [fetchResult2 lastObject];
+        return lastAssetRetreived;
+    //[fetchResult2 enumerateObjectsUsingBlock:^(PHAsset *asset, NSUInteger idx, BOOL *stop) {
+        
+        //this gets called for every asset from its localIdentifier you saved
+        /*PHImageRequestOptions * imageRequestOptions = [[PHImageRequestOptions alloc] init];
+        imageRequestOptions.synchronous = YES;
+        imageRequestOptions.deliveryMode = PHImageRequestOptionsResizeModeFast;
+        
+        [[PHImageManager defaultManager]requestImageForAsset:lastAssetRetreived targetSize:CGSizeMake(50,50) contentMode:PHImageContentModeAspectFill options:imageRequestOptions resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
+            NSLog(@"get image from result");
+            
+        }];*/
+    
+
+    //}];
+    
+    
+
+    /*
+    PHImageRequestOptions * imageRequestOptions = [[PHImageRequestOptions alloc] init];
+    [[PHImageManager defaultManager]
+     requestImageDataForAsset:lastAsset
+     options:imageRequestOptions
+     resultHandler:^(NSData *imageData, NSString *dataUTI,
+                     UIImageOrientation orientation,
+                     NSDictionary *info)
+     {
+         NSLog(@"info = %@", info);
+         if ([info objectForKey:@"PHImageFileURLKey"]) {
+             
+             NSURL *path = [info objectForKey:@"PHImageFileURLKey"];
+             // if you want to save image in document see this.
+             [self saveimageindocument:imageData withimagename:[NSString stringWithFormat:@"DEMO"]];
+         }
+     }];
+
+    
+    PHImageManager *manager = [PHImageManager defaultManager];
+    
+    PHImageRequestOptions *requestOptions = [PHImageRequestOptions new];
+    requestOptions.resizeMode   = PHImageRequestOptionsResizeModeExact;
+    requestOptions.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+    requestOptions.synchronous = true;
+    
+    __block NSData *photoArray = nil;
+    
+    [manager requestImageForAsset:lastAsset
+                       targetSize:PHImageManagerMaximumSize
+                      contentMode:PHImageContentModeDefault
+                          options:requestOptions
+                    resultHandler:^void(UIImage *image, NSDictionary *info) {
+                        NSData *imageData = UIImageJPEGRepresentation(image, 0.01);
+                        
+                        photoArray = imageData;
+                    }];
+    
+*/
+}
+
+
+-(void) saveimageindocument:(NSData*) imageData withimagename:(NSString*)imagename{
+    
+    NSString *writePath = [NSString stringWithFormat:@"%@/%@.png",[self getDocumentDirectory],imagename];
+    
+    if (![imageData writeToFile:writePath atomically:YES]) {
+        // failure
+        NSLog(@"image save failed to path %@", writePath);
+        
+    } else {
+        // success.
+        NSLog(@"image save Successfully to path %@", writePath);
+    }
+    
+}
+- (NSString*)getDocumentDirectory {
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    return [paths objectAtIndex:0];
+}
 -(void)uploadPhoto
 {
     NSLog(@"In uploadPhoto");
@@ -254,7 +345,71 @@
 
 
 
--(void)uploadPhotoInBackground:(PHAsset*)lastAsset keyName:(NSString*)keyName urlconfig:(NSURLSessionConfiguration*)nsurlconfig session:(NSURLSession*) session
+-(void)uploadLastTakenPhoto:(NSString*)keyName urlconfig:(NSURLSessionConfiguration*)nsurlconfig session:(NSURLSession*) session;
+{
+        PHFetchOptions *fetchOptions = [[PHFetchOptions alloc] init];
+        fetchOptions.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:YES]];
+        PHFetchResult *fetchResult = [PHAsset fetchAssetsWithMediaType:PHAssetMediaTypeImage options:fetchOptions];
+        PHAsset *lastAsset = [fetchResult lastObject];
+        
+        PHImageManager *manager = [PHImageManager defaultManager];
+        
+        PHImageRequestOptions *requestOptions = [PHImageRequestOptions new];
+        requestOptions.resizeMode   = PHImageRequestOptionsResizeModeExact;
+        requestOptions.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+        requestOptions.synchronous = true;
+        
+        __block NSData *photoArray = nil;
+
+        [manager requestImageForAsset:lastAsset
+                           targetSize:PHImageManagerMaximumSize
+                          contentMode:PHImageContentModeDefault
+                              options:requestOptions
+                        resultHandler:^void(UIImage *image, NSDictionary *info) {
+                            NSData *imageData = UIImageJPEGRepresentation(image, 0.01);
+                            
+                            photoArray = imageData;
+                        }];
+    
+    
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentsPath = [paths objectAtIndex:0]; //Get the docs directory
+    NSString *filePath = [documentsPath stringByAppendingPathComponent:@"image.jpg"]; //Add the file name
+    
+    if(![photoArray writeToFile:filePath atomically:YES])
+    {
+        NSLog(@"local image save failed");
+    }//Write the file
+    
+    
+    // create a request
+
+    NSString *url = [NSString stringWithFormat: @"https://coordinatorweb.azurewebsites.net/api/values?name=%@&option=add", keyName];
+    
+    NSMutableURLRequest *req = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:url]];
+    [req setHTTPMethod:@"POST"];
+    
+    NSMutableData *postbody = [NSMutableData data];
+    [postbody appendData:[NSData dataWithData:photoArray]];
+    [req setHTTPBody:postbody];
+    NSString *postLength = [NSString stringWithFormat:@"%lu",(unsigned long)[postbody length]];
+    
+    [req setValue:postLength forHTTPHeaderField:@"Content-Length"];
+    [req setValue:@"application/octet-stream" forHTTPHeaderField:@"Content-Type"];
+    
+    NSURLSessionUploadTask *uploadTask = [session uploadTaskWithRequest:req fromFile:[NSURL fileURLWithPath:filePath]];
+    
+    
+    NSLog(@"starting upload of photo");
+    [uploadTask resume];
+    NSLog(@"resume uploadtask called");
+        
+        
+   
+
+}
+
+-(void)uploadPhotoInBackground:(PHAsset*)asset keyName:(NSString*)keyName urlconfig:(NSURLSessionConfiguration*)nsurlconfig session:(NSURLSession*) session
 {
     NSLog(@"In uploadPhotoInBackground");
     
@@ -267,7 +422,7 @@
     
     __block NSData *photoArray = nil;
     
-    [manager requestImageForAsset:lastAsset
+    [manager requestImageForAsset:asset
                        targetSize:PHImageManagerMaximumSize
                       contentMode:PHImageContentModeDefault
                           options:requestOptions
@@ -308,12 +463,6 @@
     [req setValue:postLength forHTTPHeaderField:@"Content-Length"];
     [req setValue:@"application/octet-stream" forHTTPHeaderField:@"Content-Type"];
     
-    
- //   NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:@"uploadFileServer"];
-    
-    //NSURLSession *session = [NSURLSession sessionWithConfiguration:nsurlconfig delegate:self delegateQueue:nil];
-    
-
     NSURLSessionUploadTask *uploadTask = [session uploadTaskWithRequest:req fromFile:[NSURL fileURLWithPath:filePath]];
   
  
@@ -365,10 +514,9 @@ totalBytesExpectedToSend:(int64_t)totalBytesExpectedToSend
 {
     NSLog(@"In performFetchWithCompletionHandler");
     
-  //  NSString *keyName = [AppDelegate key];
- //   [self uploadPhotoInBackground:nil keyName:keyName];
+    [self.myViewController handlePhotoLibraryChanges];
     //Perform some operation
-    completionHandler(UIBackgroundFetchResultNewData);
+   completionHandler(UIBackgroundFetchResultNewData);
 }
 
 
@@ -383,8 +531,7 @@ fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
 
     [[NSNotificationCenter defaultCenter] postNotificationName:@"notificationCameIn" object:nil];
     
-    //[self uploadPhotoInBackground];
-    
+    [self.myViewController uploadPhotoPushNotification];
     completionHandler(UIBackgroundFetchResultNewData);
 }
 

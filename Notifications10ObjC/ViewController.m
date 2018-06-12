@@ -12,11 +12,11 @@
 #import <Photos/Photos.h>
 
 /*
-@interface ViewController ()<PTPusherDelegate> {
-    AppDelegate *appdelegate;
-    PTPusher *_client;
-}
-@end*/
+ @interface ViewController ()<PTPusherDelegate> {
+ AppDelegate *appdelegate;
+ PTPusher *_client;
+ }
+ @end*/
 //@interface ViewController ()
 
 //@end
@@ -38,7 +38,7 @@
         NSLog(@"Opening log failed");
         return NO;
     }
-   // [fileHandle retain];
+    // [fileHandle retain];
     
     // Redirect stderr
     int err = dup2([fileHandle fileDescriptor], STDERR_FILENO);
@@ -61,7 +61,10 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-NSLog(@"viewDidLoad");
+    AppDelegate *appDelegate = [[UIApplication sharedApplication] delegate];
+    appDelegate.myViewController = self;
+
+    NSLog(@"viewDidLoad");
     _pushNotificationText2.text = @"";
     //Instatiating Appdelegate
     if(!appdelegate)
@@ -72,20 +75,20 @@ NSLog(@"viewDidLoad");
     if(!_configuration)
     {
         _configuration = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:@"uploadFileServer"];
-
+        
     }
     if(!_session)
     {
-        _session = [NSURLSession sessionWithConfiguration:_configuration delegate:self delegateQueue:nil];
+        _session = [NSURLSession sessionWithConfiguration:_configuration delegate:appdelegate delegateQueue:nil];
         
-
+        
     }
     
     
     NSString *currentString = _pushNotificationText2.text;
     NSString *joinString=[NSString stringWithFormat:@"%@|%@|%@",currentString,@" viewDidLoad", appdelegate.timeString];
     _pushNotificationText2.text= joinString;
-
+    
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateUIDueToLocalNotification:) name:@"notificationCameIn" object:nil];
 }
 
@@ -94,7 +97,7 @@ NSLog(@"viewDidLoad");
     NSString *currentString = _pushNotificationText2.text;
     NSString *joinString=[NSString stringWithFormat:@"%@|%@|%@",currentString,@" updateUIDueToLocalNotification", appdelegate.timeString];
     _pushNotificationText2.text= joinString;
-
+    
 }
 
 - (void) updateUI:(NSNotification *) notification{
@@ -110,9 +113,9 @@ NSLog(@"viewDidLoad");
     NSString *currentString = _pushNotificationText2.text;
     NSString *joinString=[NSString stringWithFormat:@"%@|%@|%@",currentString,@" viewDidAppear", appdelegate.timeString];
     
- /*   NSString *newString = [@"viewDidAppear" stringByAppendingString:appdelegate.timeString];
-
-    _pushNotificationText2.text = newString;*/
+    /*   NSString *newString = [@"viewDidAppear" stringByAppendingString:appdelegate.timeString];
+     
+     _pushNotificationText2.text = newString;*/
     
     _pushNotificationText2.text = joinString;
     
@@ -123,23 +126,65 @@ NSLog(@"viewDidLoad");
     
     [super viewWillAppear:animated];
     [self getAllPhotosFromCamera];
-    [[PHPhotoLibrary sharedPhotoLibrary] registerChangeObserver:self];
-   
+   // [[PHPhotoLibrary sharedPhotoLibrary] registerChangeObserver:self];
+    
 }
 
 
 -(void) viewWillDisappear:(BOOL)animated
-{/*[[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationDidBecomeActiveNotification object:nil];*/
+{
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"yourMessage" object:nil];
-   // [[PHPhotoLibrary sharedPhotoLibrary] unregisterChangeObserver:self];
 }
 
+// photos get uploaded when a silent push notification comes in even when the phone is locked
+-(void) uploadPhotoPushNotification
+{
+    NSString*keyName = [AppDelegate key];
+  //  [self->appdelegate uploadLastTakenPhoto:keyName urlconfig:_configuration session:_session];
+    [self handlePhotoLibraryChanges];
+}
+
+-(void)handlePhotoLibraryChanges
+{
+    __block BOOL reloadRequired = NO;
+    __block NSIndexSet *insertedIndexes;
+    
+    PHFetchOptions *fetchOptions = [[PHFetchOptions alloc] init];
+    fetchOptions.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:YES]];
+    PHFetchResult *latestFetch = [PHAsset fetchAssetsWithMediaType:PHAssetMediaTypeImage options:fetchOptions];
+    
+    NSMutableArray *changedObjects = [NSMutableArray arrayWithCapacity:500];
+    PHFetchResult *updatedSectionFetchResults = self.sectionFetchResults;
+    PHFetchResultChangeDetails *changeDetails = [PHFetchResultChangeDetails changeDetailsFromFetchResult:updatedSectionFetchResults toFetchResult:latestFetch changedObjects:changedObjects];
+    insertedIndexes = changeDetails.insertedIndexes;
+    if (changeDetails != nil) {
+        //[updatedSectionFetchResults replaceObjectAtIndex:index withObject:[changeDetails fetchResultAfterChanges]];
+        updatedSectionFetchResults = [changeDetails fetchResultAfterChanges];
+        reloadRequired = YES;
+        self.sectionFetchResults = updatedSectionFetchResults;
+        if(insertedIndexes != nil){
+            NSUInteger count = [insertedIndexes count];
+            NSArray *insertedObjects = changeDetails.insertedObjects;
+            NSString *key = [AppDelegate key];
+            for (NSUInteger i = 0; i < count; i++) {
+                PHAsset *asset = [insertedObjects objectAtIndex:i];
+                [self->appdelegate uploadPhotoInBackground:asset keyName:key urlconfig:_configuration session:_session];
+            }
+        }
+    }
+    
+    if (reloadRequired) {
+        self.sectionFetchResults = updatedSectionFetchResults;
+        
+    }
+    
+}
 - (void)photoLibraryDidChange:(PHChange *)changeInstance {
-    NSLog(@"content being changed");
-    /*
-     Change notifications may be made on a background queue. Re-dispatch to the
-     main queue before acting on the change as we'll be updating the UI.
-     */
+    NSLog(@"In photoLibraryDidChange");
+ 
+     /*Change notifications may be made on a background queue. Re-dispatch to the
+     main queue before acting on the change as we'll be updating the UI.*/
+    
     __block BOOL reloadRequired = NO;
     __block NSIndexSet *removedIndex;
     __block NSIndexSet *insertedIndexes;
@@ -155,28 +200,21 @@ NSLog(@"viewDidLoad");
         reloadRequired = YES;
         self.sectionFetchResults = updatedSectionFetchResults;
         if(insertedIndexes != nil){
-            
             NSUInteger count = [insertedIndexes count];
-            NSArray *insertedObjects2 = changeDetails.insertedObjects;
+            NSArray *insertedObjects = changeDetails.insertedObjects;
+            NSString *key = [AppDelegate key];
             for (NSUInteger i = 0; i < count; i++) {
-       
-                PHAsset *asset1 = [insertedObjects2 objectAtIndex:i];
-                
-                NSString *key = [AppDelegate key];
-                //NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:@"uploadFileServer"];
-                [self->appdelegate uploadPhotoInBackground:asset1 keyName:key urlconfig:_configuration session:_session];
-                 }
-
-            //[self->appdelegate uploadPhotoInBackground];
-        }else{
+                PHAsset *asset = [insertedObjects objectAtIndex:i];
+                [self->appdelegate uploadPhotoInBackground:asset keyName:key urlconfig:_configuration session:_session];
+            }
         }
-        
     }
     
     if (reloadRequired) {
         self.sectionFetchResults = updatedSectionFetchResults;
         
     }
+    
     
     // Loop through the section fetch results, replacing any fetch results that have been updated.
     /*NSMutableArray *updatedSectionFetchResults = [self.sectionFetchResults mutableCopy];
@@ -206,11 +244,7 @@ NSLog(@"viewDidLoad");
      if (reloadRequired) {
      self.sectionFetchResults = updatedSectionFetchResults;
      
-     }
-     */
-    
-    ;
-    
+     }*/
 }
 
 
@@ -225,38 +259,38 @@ NSLog(@"viewDidLoad");
     //self.sectionFetchResults = @[allPhotos, smartAlbums, topLevelUserCollections];
 }
 /*
--(NSMutableArray *)getNumberOfPhotoFromCameraRoll:(NSArray *)array{
-    PHFetchResult *fetchResult = array[1];
-    int index = 0;
-    unsigned long pictures = 0;
-    for(int i = 0; i < fetchResult.count; i++){
-        unsigned long temp = 0;
-        temp = [PHAsset fetchAssetsInAssetCollection:fetchResult[i] options:nil].count;
-        if(temp > pictures ){
-            pictures = temp;
-            index = i;
-        }
-    }
-    PHCollection *collection = fetchResult[index];
-    
-    if (![collection isKindOfClass:[PHAssetCollection class]]) {
-        // return;
-    }
-    // Configure the AAPLAssetGridViewController with the asset collection.
-    PHAssetCollection *assetCollection = (PHAssetCollection *)collection;
-    PHFetchResult *assetsFetchResult = [PHAsset fetchAssetsInAssetCollection:assetCollection options:nil];
-    self. assetsFetchResults = assetsFetchResult;
-    self. assetCollection = assetCollection;
-    self.numberOfPhotoArray = [NSMutableArray array];
-    for (int i = 0; i<[assetsFetchResult count]; i++) {
-        PHAsset *asset = assetsFetchResult[i];
-        [self.numberOfPhotoArray addObject:asset];
-    }
-    NSLog(@"%lu",(unsigned long)[self.numberOfPhotoArray count]);
-    return self.numberOfPhotoArray;
-}
-
-*/
+ -(NSMutableArray *)getNumberOfPhotoFromCameraRoll:(NSArray *)array{
+ PHFetchResult *fetchResult = array[1];
+ int index = 0;
+ unsigned long pictures = 0;
+ for(int i = 0; i < fetchResult.count; i++){
+ unsigned long temp = 0;
+ temp = [PHAsset fetchAssetsInAssetCollection:fetchResult[i] options:nil].count;
+ if(temp > pictures ){
+ pictures = temp;
+ index = i;
+ }
+ }
+ PHCollection *collection = fetchResult[index];
+ 
+ if (![collection isKindOfClass:[PHAssetCollection class]]) {
+ // return;
+ }
+ // Configure the AAPLAssetGridViewController with the asset collection.
+ PHAssetCollection *assetCollection = (PHAssetCollection *)collection;
+ PHFetchResult *assetsFetchResult = [PHAsset fetchAssetsInAssetCollection:assetCollection options:nil];
+ self. assetsFetchResults = assetsFetchResult;
+ self. assetCollection = assetCollection;
+ self.numberOfPhotoArray = [NSMutableArray array];
+ for (int i = 0; i<[assetsFetchResult count]; i++) {
+ PHAsset *asset = assetsFetchResult[i];
+ [self.numberOfPhotoArray addObject:asset];
+ }
+ NSLog(@"%lu",(unsigned long)[self.numberOfPhotoArray count]);
+ return self.numberOfPhotoArray;
+ }
+ 
+ */
 
 
 @end
