@@ -31,7 +31,7 @@ void _Log(NSString *prefix, const char *file, int lineNumber, const char *funcNa
     
     NSDate * now = [NSDate date];
     NSDateFormatter *outputFormatter = [[NSDateFormatter alloc] init];
-    [outputFormatter setDateFormat:@"HH:mm:ss"];
+    [outputFormatter setDateFormat:@"yyyy-MM-dd 'at' HH:mm:ss"];
     NSString *dateTimeString = [outputFormatter stringFromDate:now];
     
     NSString *msgWithTime=[NSString stringWithFormat:@"%@|%@",dateTimeString,  msg];

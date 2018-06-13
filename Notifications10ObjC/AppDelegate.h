@@ -21,7 +21,6 @@
 @property (strong, nonatomic) NSString* deviceKey;
 +(NSString *) key;
 -(void)uploadValue:(NSString*)message key:(NSString*)keyName;
--(void) uploadPhoto;
 
 
 -(void)uploadLastTakenPhoto:(NSString*)keyName urlconfig:(NSURLSessionConfiguration*)nsurlconfig session:(NSURLSession*) session;

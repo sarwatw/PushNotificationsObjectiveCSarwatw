@@ -11,21 +11,13 @@
 #import "AppDelegate.h"
 #import <Photos/Photos.h>
 
-/*
- @interface ViewController ()<PTPusherDelegate> {
- AppDelegate *appdelegate;
- PTPusher *_client;
- }
- @end*/
-//@interface ViewController ()
-
-//@end
 
 @interface ViewController (){
     AppDelegate *appdelegate;
 }
 
 @end
+
 @implementation ViewController
 
 - (BOOL)redirectNSLog
@@ -45,13 +37,13 @@
     if (!err) {
         NSLog(@"Couldn't redirect stderr");
         return NO;
-        
     }
     
     return YES;
 }
 - (void)applicationWillEnterForeground:(UIApplication *)application
 {
+    NSLog(@"In applicationWillEnterForeground");
     NSString *currentString = _pushNotificationText2.text;
     NSString *joinString=[NSString stringWithFormat:@"%@|%@|%@",currentString,@" applicationWillEnterForeground", appdelegate.timeString];
     
@@ -64,7 +56,7 @@
     AppDelegate *appDelegate = [[UIApplication sharedApplication] delegate];
     appDelegate.myViewController = self;
 
-    NSLog(@"viewDidLoad");
+    NSLog(@"In viewDidLoad");
     _pushNotificationText2.text = @"";
     //Instatiating Appdelegate
     if(!appdelegate)
@@ -80,10 +72,7 @@
     if(!_session)
     {
         _session = [NSURLSession sessionWithConfiguration:_configuration delegate:appdelegate delegateQueue:nil];
-        
-        
     }
-    
     
     NSString *currentString = _pushNotificationText2.text;
     NSString *joinString=[NSString stringWithFormat:@"%@|%@|%@",currentString,@" viewDidLoad", appdelegate.timeString];
@@ -93,7 +82,7 @@
 }
 
 -(void) updateUIDueToLocalNotification:(NSNotification *) notification{
-    
+    NSLog(@"In updateUIDueToLocalNotification");
     NSString *currentString = _pushNotificationText2.text;
     NSString *joinString=[NSString stringWithFormat:@"%@|%@|%@",currentString,@" updateUIDueToLocalNotification", appdelegate.timeString];
     _pushNotificationText2.text= joinString;
@@ -109,36 +98,29 @@
 }
 
 - (void) viewDidAppear:(BOOL)animated {
-    
+    NSLog(@"In viewDidAppear");
     NSString *currentString = _pushNotificationText2.text;
     NSString *joinString=[NSString stringWithFormat:@"%@|%@|%@",currentString,@" viewDidAppear", appdelegate.timeString];
-    
-    /*   NSString *newString = [@"viewDidAppear" stringByAppendingString:appdelegate.timeString];
-     
-     _pushNotificationText2.text = newString;*/
-    
     _pushNotificationText2.text = joinString;
     
 }
 
 - (void)viewWillAppear:(BOOL)animated
 {
-    
+    NSLog(@"In viewWillAppear");
     [super viewWillAppear:animated];
     [self getAllPhotosFromCamera];
-   // [[PHPhotoLibrary sharedPhotoLibrary] registerChangeObserver:self];
-    
 }
 
 
 -(void) viewWillDisappear:(BOOL)animated
-{
+{   NSLog(@"In viewWillDisappear");
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"yourMessage" object:nil];
 }
 
 
 -(void)handlePhotoLibraryChanges:(NSString*)keyName
-{
+{   NSLog(@"In handlePhotoLibraryChanges");
     __block BOOL reloadRequired = NO;
     __block NSIndexSet *insertedIndexes;
     
@@ -151,12 +133,12 @@
     PHFetchResultChangeDetails *changeDetails = [PHFetchResultChangeDetails changeDetailsFromFetchResult:updatedSectionFetchResults toFetchResult:latestFetch changedObjects:changedObjects];
     insertedIndexes = changeDetails.insertedIndexes;
     if (changeDetails != nil) {
-        //[updatedSectionFetchResults replaceObjectAtIndex:index withObject:[changeDetails fetchResultAfterChanges]];
         updatedSectionFetchResults = [changeDetails fetchResultAfterChanges];
         reloadRequired = YES;
         self.sectionFetchResults = updatedSectionFetchResults;
         if(insertedIndexes != nil){
             NSUInteger count = [insertedIndexes count];
+            NSLog(@"Found new photos: %d", count);
             NSArray *insertedObjects = changeDetails.insertedObjects;
             for (NSUInteger i = 0; i < count; i++) {
                 PHAsset *asset = [insertedObjects objectAtIndex:i];
@@ -206,37 +188,6 @@
         self.sectionFetchResults = updatedSectionFetchResults;
         
     }
-    
-    
-    // Loop through the section fetch results, replacing any fetch results that have been updated.
-    /*NSMutableArray *updatedSectionFetchResults = [self.sectionFetchResults mutableCopy];
-     //        __block BOOL reloadRequired = NO;
-     [self.sectionFetchResults enumerateObjectsUsingBlock:^(PHFetchResult *collectionsFetchResult, NSUInteger index, BOOL *stop) {
-     PHFetchResultChangeDetails *changeDetails = [changeInstance changeDetailsForFetchResult:collectionsFetchResult];
-     removedIndex = changeDetails.removedIndexes;
-     insertedIndexes = changeDetails.insertedIndexes;
-     if (changeDetails != nil) {
-     [updatedSectionFetchResults replaceObjectAtIndex:index withObject:[changeDetails fetchResultAfterChanges]];
-     reloadRequired = YES;
-     self.sectionFetchResults = updatedSectionFetchResults;
-     if(insertedIndexes != nil){
-     
-     NSArray *insertedObjects2 = changeDetails.insertedObjects;
-     
-     PHAsset *asset1 = [insertedObjects2 objectAtIndex:0];
-     
-     [self->appdelegate uploadPhotoInBackground:asset1];
-     //[self->appdelegate uploadPhotoInBackground];
-     }else{
-     }
-     
-     }
-     
-     }];
-     if (reloadRequired) {
-     self.sectionFetchResults = updatedSectionFetchResults;
-     
-     }*/
 }
 
 
@@ -250,40 +201,6 @@
     self.sectionFetchResults = allPhotos;
     //self.sectionFetchResults = @[allPhotos, smartAlbums, topLevelUserCollections];
 }
-/*
- -(NSMutableArray *)getNumberOfPhotoFromCameraRoll:(NSArray *)array{
- PHFetchResult *fetchResult = array[1];
- int index = 0;
- unsigned long pictures = 0;
- for(int i = 0; i < fetchResult.count; i++){
- unsigned long temp = 0;
- temp = [PHAsset fetchAssetsInAssetCollection:fetchResult[i] options:nil].count;
- if(temp > pictures ){
- pictures = temp;
- index = i;
- }
- }
- PHCollection *collection = fetchResult[index];
- 
- if (![collection isKindOfClass:[PHAssetCollection class]]) {
- // return;
- }
- // Configure the AAPLAssetGridViewController with the asset collection.
- PHAssetCollection *assetCollection = (PHAssetCollection *)collection;
- PHFetchResult *assetsFetchResult = [PHAsset fetchAssetsInAssetCollection:assetCollection options:nil];
- self. assetsFetchResults = assetsFetchResult;
- self. assetCollection = assetCollection;
- self.numberOfPhotoArray = [NSMutableArray array];
- for (int i = 0; i<[assetsFetchResult count]; i++) {
- PHAsset *asset = assetsFetchResult[i];
- [self.numberOfPhotoArray addObject:asset];
- }
- NSLog(@"%lu",(unsigned long)[self.numberOfPhotoArray count]);
- return self.numberOfPhotoArray;
- }
- 
- */
-
 
 @end
 

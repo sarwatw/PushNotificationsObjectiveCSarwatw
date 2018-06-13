@@ -22,15 +22,6 @@
 
 @implementation AppDelegate
 
-/*
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    // Override point for customization after application launch.
-    
-    [self registerForRemoteNotification];
-    
-    return YES;
-}*/
-
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     
     NSLog(@"didFinishLaunchingWithOptions");
@@ -71,8 +62,6 @@
     return YES;
 }
 
-
-
 - (void)applicationWillResignActive:(UIApplication *)application {
     // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
     // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
@@ -88,8 +77,6 @@
     
     // set minimum fetch interval
     [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
-    
-  
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application {
@@ -109,7 +96,6 @@
     // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
    
     NSLog(@"In applicationDidBecomeActive");
-
 }
 
 
@@ -138,19 +124,20 @@
 
 -(void)uploadValue:(NSString*)message key:(NSString*)keyName
 {
+    NSLog(@"In uploadValue");
     NSString *url = [NSString stringWithFormat: @"https://coordinatorweb.azurewebsites.net/api/values?name=%@&option=add", keyName];
     NSMutableURLRequest *req = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:url]];
     [req setHTTPMethod:@"POST"];
 
     NSDate * now = [NSDate date];
     NSDateFormatter *outputFormatter = [[NSDateFormatter alloc] init];
-    [outputFormatter setDateFormat:@"HH:mm:ss"];
+    [outputFormatter setDateFormat:@"yyyy-MM-dd 'at' HH:mm:ss"];
     NSString *dateTimeString = [outputFormatter stringFromDate:now];
     
     NSString *bodyData = [NSString stringWithFormat: @"%@_%@", dateTimeString, message];
     
     [req setHTTPBody:[bodyData dataUsingEncoding:NSUTF8StringEncoding]];
-    NSString *postLength = [NSString stringWithFormat:@"%d",[bodyData length]];
+    NSString *postLength = [NSString stringWithFormat:@"%lu",(unsigned long)[bodyData length]];
     
     [req setValue:postLength forHTTPHeaderField:@"Content-Length"];
     [req setValue:@"text/plain" forHTTPHeaderField:@"Content-Type"];
@@ -159,27 +146,16 @@
                                   dataTaskWithRequest: req
                                   completionHandler: ^(NSData *data, NSURLResponse *response, NSError *error)
                                   {
-                                      
                                       if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
-                                          
                                           NSInteger statusCode = [(NSHTTPURLResponse *)response statusCode];
-                                          
-                                          NSLog(@"StatusCode%d",statusCode)
+                                          NSLog(@"UploadValue: StatusCode%d",statusCode)
                                           if (statusCode != 200) {
                                               NSLog(@"dataTaskWithRequest HTTP status code: %d", statusCode);
                                               return;
                                           }
                                       }
-
-                                      
-                                      
-                                      
-                                      
                                   }];
     [task resume];
-    
-    
-    
 }
 
 
@@ -222,84 +198,10 @@
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     return [paths objectAtIndex:0];
 }
--(void)uploadPhoto
-{
-    NSLog(@"In uploadPhoto");
-    
-    PHFetchOptions *fetchOptions = [[PHFetchOptions alloc] init];
-    fetchOptions.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:YES]];
-    fetchOptions.fetchLimit = 10;
-    PHFetchResult *fetchResult = [PHAsset fetchAssetsWithMediaType:PHAssetMediaTypeImage options:fetchOptions];
-    PHAsset *lastAsset = [fetchResult lastObject];
-    
-    PHImageManager *manager = [PHImageManager defaultManager];
-    
-    PHImageRequestOptions *requestOptions = [PHImageRequestOptions new];
-    requestOptions.resizeMode   = PHImageRequestOptionsResizeModeExact;
-    requestOptions.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
-    requestOptions.synchronous = true;
-    
-    __block NSData *photoArray = nil;
-    
-    [manager requestImageForAsset:lastAsset
-                       targetSize:PHImageManagerMaximumSize
-                      contentMode:PHImageContentModeDefault
-                          options:requestOptions
-                    resultHandler:^void(UIImage *image, NSDictionary *info) {
-                        NSData *imageData = UIImageJPEGRepresentation(image, 0.01);
-                        
-                        photoArray = imageData;
-                    }];
-    
-    
-    // https://stackoverflow.com/questions/7673127/how-to-send-post-and-get-request
-
-    NSMutableURLRequest *req = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"https://coordinatorweb.azurewebsites.net/api/values?name=sarwatismail7&option=add"]];
-    [req setHTTPMethod:@"POST"];
-
-    NSMutableData *postbody = [NSMutableData data];
-    [postbody appendData:[NSData dataWithData:photoArray]];
-    [req setHTTPBody:postbody];
-    NSString *postLength = [NSString stringWithFormat:@"%lu",(unsigned long)[postbody length]];
-    
-    [req setValue:postLength forHTTPHeaderField:@"Content-Length"];
-    //[req addValue:contentType forHTTPHeaderField: @"Content-Type"];
-       [req setValue:@"application/octet-stream" forHTTPHeaderField:@"Content-Type"];
-    
-   /* NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:@"uploadFileServer"];
-    
-     NSURLSessionUploadTask
-    https://stackoverflow.com/questions/38581240/nsurlsessionuploadtask-example-in-objective-c
-    */
-
-    
-    
-    NSURLSessionDataTask *task = [[NSURLSession sharedSession]
-                                  dataTaskWithRequest: req
-                                  completionHandler: ^(NSData *data, NSURLResponse *response, NSError *error)
-                                  {
-                                      if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
-                                          
-                                          NSInteger statusCode = [(NSHTTPURLResponse *)response statusCode];
-                                          
-                                          NSLog(@"StatusCode%d",statusCode)
-                                          if (statusCode != 200) {
-                                              NSLog(@"dataTaskWithRequest HTTP status code: %d", statusCode);
-                                              return;
-                                          }
-                                      }
-
-                                  }];
-    [task resume];
-    
-    
-    
-}
-
-
 
 -(void)uploadLastTakenPhoto:(NSString*)keyName urlconfig:(NSURLSessionConfiguration*)nsurlconfig session:(NSURLSession*) session;
 {
+    NSLog(@"In uploadLastTakenPhoto");
         PHFetchOptions *fetchOptions = [[PHFetchOptions alloc] init];
         fetchOptions.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:YES]];
         PHFetchResult *fetchResult = [PHAsset fetchAssetsWithMediaType:PHAssetMediaTypeImage options:fetchOptions];
@@ -356,10 +258,6 @@
     NSLog(@"starting upload of photo");
     [uploadTask resume];
     NSLog(@"resume uploadtask called");
-        
-        
-   
-
 }
 
 -(void)uploadPhotoInBackground:(PHAsset*)asset keyName:(NSString*)keyName urlconfig:(NSURLSessionConfiguration*)nsurlconfig session:(NSURLSession*) session
@@ -397,12 +295,6 @@
         NSLog(@"local image save failed");
     }//Write the file
     
-
-    // create a request
-    
-    //NSString* url = @"https://coordinatorweb.azurewebsites.net/api/values?name=sarwatismail7000&option=add";
-    
-    //NSString *url = @"https://coordinatorweb.azurewebsites.net/api/values?name=SarwatWork_D8966C98-1137-460D-96C0-C60C30A2CE9E&option=add";
     NSString *url = [NSString stringWithFormat: @"https://coordinatorweb.azurewebsites.net/api/values?name=%@&option=add", keyName];
 
     NSMutableURLRequest *req = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:url]];
@@ -419,7 +311,7 @@
     NSURLSessionUploadTask *uploadTask = [session uploadTaskWithRequest:req fromFile:[NSURL fileURLWithPath:filePath]];
   
  
-    NSLog(@"starting upload of photo");
+    NSLog(@"About to call uploadTask resume");
     [uploadTask resume];
     NSLog(@"resume uploadtask called");
 }
@@ -453,7 +345,6 @@ totalBytesExpectedToSend:(int64_t)totalBytesExpectedToSend
           
 + (NSString *)key
 {
-    
     NSString *deviceName = [[UIDevice currentDevice] name];
     NSString *deviceNameNoSpace = [deviceName stringByReplacingOccurrencesOfString:@" " withString:@""];
     NSString *UUID = [[NSUUID UUID] UUIDString];
@@ -487,7 +378,7 @@ fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
     [self uploadValue:@"didReceiveRemoteNotification-Silent" key:keyname];
     NSDate * now = [NSDate date];
     NSDateFormatter *outputFormatter = [[NSDateFormatter alloc] init];
-    [outputFormatter setDateFormat:@"HH:mm:ss"];
+    [outputFormatter setDateFormat:@"yyyy-MM-dd 'at' HH:mm:ss"];
     _timeString = [outputFormatter stringFromDate:now];
 
    // [[NSNotificationCenter defaultCenter] postNotificationName:@"notificationCameIn" object:nil];
@@ -520,7 +411,7 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
     
     NSDate * now = [NSDate date];
     NSDateFormatter *outputFormatter = [[NSDateFormatter alloc] init];
-    [outputFormatter setDateFormat:@"HH:mm:ss"];
+    [outputFormatter setDateFormat:@"yyyy-MM-dd 'at' HH:mm:ss"];
     _timeString = [outputFormatter stringFromDate:now];
     
     completionHandler();
