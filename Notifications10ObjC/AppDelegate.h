@@ -18,8 +18,9 @@
 @property (strong, nonatomic) NSString *strDeviceToken;
 @property (nonatomic, retain) NSString *timeString;
 @property (strong, nonatomic) ViewController *myViewController;
+@property (strong, nonatomic) NSString* deviceKey;
 +(NSString *) key;
--(void) uploadValue;
+-(void)uploadValue:(NSString*)message key:(NSString*)keyName;
 -(void) uploadPhoto;
 
 

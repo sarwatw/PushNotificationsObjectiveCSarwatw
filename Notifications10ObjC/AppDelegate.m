@@ -34,6 +34,7 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     
     NSLog(@"didFinishLaunchingWithOptions");
+      _deviceKey = [AppDelegate key];
 
     application.applicationIconBadgeNumber = 0;
     if( SYSTEM_VERSION_LESS_THAN( @"10.0" ) )
@@ -87,6 +88,8 @@
     
     // set minimum fetch interval
     [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
+    
+  
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application {
@@ -133,20 +136,24 @@
     self.strDeviceToken = strDevicetoken;
 }
 
--(void)uploadValue
+-(void)uploadValue:(NSString*)message key:(NSString*)keyName
 {
-    // https://stackoverflow.com/questions/7673127/how-to-send-post-and-get-request
-    
-    NSMutableURLRequest *req = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"https://coordinatorweb.azurewebsites.net/api/values?name=sarwatismail4&option=add"]];
+    NSString *url = [NSString stringWithFormat: @"https://coordinatorweb.azurewebsites.net/api/values?name=%@&option=add", keyName];
+    NSMutableURLRequest *req = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:url]];
     [req setHTTPMethod:@"POST"];
-    NSString *bodyData = @"yoooo";
+
+    NSDate * now = [NSDate date];
+    NSDateFormatter *outputFormatter = [[NSDateFormatter alloc] init];
+    [outputFormatter setDateFormat:@"HH:mm:ss"];
+    NSString *dateTimeString = [outputFormatter stringFromDate:now];
+    
+    NSString *bodyData = [NSString stringWithFormat: @"%@_%@", dateTimeString, message];
+    
     [req setHTTPBody:[bodyData dataUsingEncoding:NSUTF8StringEncoding]];
     NSString *postLength = [NSString stringWithFormat:@"%d",[bodyData length]];
     
     [req setValue:postLength forHTTPHeaderField:@"Content-Length"];
     [req setValue:@"text/plain" forHTTPHeaderField:@"Content-Type"];
-    
-    NSURLSession *session = [NSURLSession sharedSession];
     
     NSURLSessionDataTask *task = [[NSURLSession sharedSession]
                                   dataTaskWithRequest: req
@@ -446,6 +453,7 @@ totalBytesExpectedToSend:(int64_t)totalBytesExpectedToSend
           
 + (NSString *)key
 {
+    
     NSString *deviceName = [[UIDevice currentDevice] name];
     NSString *deviceNameNoSpace = [deviceName stringByReplacingOccurrencesOfString:@" " withString:@""];
     NSString *UUID = [[NSUUID UUID] UUIDString];
@@ -455,12 +463,16 @@ totalBytesExpectedToSend:(int64_t)totalBytesExpectedToSend
     return keyName;
 }
 
+
+
 // background fetch
 - (void)application:(UIApplication *)application performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler
 {
     NSLog(@"In performFetchWithCompletionHandler");
+    NSString* keyname = [self deviceKey];
+    [self uploadValue:@"performFetchWithCompletionHandler" key:keyname];
     
-    [self.myViewController handlePhotoLibraryChanges];
+    [self.myViewController handlePhotoLibraryChanges:keyname];
     //Perform some operation
    completionHandler(UIBackgroundFetchResultNewData);
 }
@@ -470,14 +482,17 @@ totalBytesExpectedToSend:(int64_t)totalBytesExpectedToSend
 fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
 
     NSLog(@"method didReceiveRemoteNotification - Received remote notification");
+    
+    NSString* keyname = [self deviceKey];
+    [self uploadValue:@"didReceiveRemoteNotification-Silent" key:keyname];
     NSDate * now = [NSDate date];
     NSDateFormatter *outputFormatter = [[NSDateFormatter alloc] init];
     [outputFormatter setDateFormat:@"HH:mm:ss"];
     _timeString = [outputFormatter stringFromDate:now];
 
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"notificationCameIn" object:nil];
+   // [[NSNotificationCenter defaultCenter] postNotificationName:@"notificationCameIn" object:nil];
     
-    [self.myViewController uploadPhotoPushNotification];
+    [self.myViewController handlePhotoLibraryChanges:keyname];
     completionHandler(UIBackgroundFetchResultNewData);
 }
 

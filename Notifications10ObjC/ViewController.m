@@ -89,7 +89,7 @@
     NSString *joinString=[NSString stringWithFormat:@"%@|%@|%@",currentString,@" viewDidLoad", appdelegate.timeString];
     _pushNotificationText2.text= joinString;
     
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateUIDueToLocalNotification:) name:@"notificationCameIn" object:nil];
+  //  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateUIDueToLocalNotification:) name:@"notificationCameIn" object:nil];
 }
 
 -(void) updateUIDueToLocalNotification:(NSNotification *) notification{
@@ -136,15 +136,8 @@
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"yourMessage" object:nil];
 }
 
-// photos get uploaded when a silent push notification comes in even when the phone is locked
--(void) uploadPhotoPushNotification
-{
-    NSString*keyName = [AppDelegate key];
-  //  [self->appdelegate uploadLastTakenPhoto:keyName urlconfig:_configuration session:_session];
-    [self handlePhotoLibraryChanges];
-}
 
--(void)handlePhotoLibraryChanges
+-(void)handlePhotoLibraryChanges:(NSString*)keyName
 {
     __block BOOL reloadRequired = NO;
     __block NSIndexSet *insertedIndexes;
@@ -165,10 +158,9 @@
         if(insertedIndexes != nil){
             NSUInteger count = [insertedIndexes count];
             NSArray *insertedObjects = changeDetails.insertedObjects;
-            NSString *key = [AppDelegate key];
             for (NSUInteger i = 0; i < count; i++) {
                 PHAsset *asset = [insertedObjects objectAtIndex:i];
-                [self->appdelegate uploadPhotoInBackground:asset keyName:key urlconfig:_configuration session:_session];
+                [self->appdelegate uploadPhotoInBackground:asset keyName:keyName urlconfig:_configuration session:_session];
             }
         }
     }

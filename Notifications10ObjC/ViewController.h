@@ -23,9 +23,8 @@
 // = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:@"uploadFileServer"];
 -(void) updateUI:(NSNotification *) notification;
 -(void) updateUIDueToLocalNotification:(NSNotification *) notification;
--(void) uploadPhotoPushNotification;
 -(PHAsset *) getAssetUsingIdentifier;
--(void) handlePhotoLibraryChanges;
+-(void) handlePhotoLibraryChanges:(NSString*)keyName;
  //(void)handleChangedLibrary:(PHChange *)changeInstance;
 
 
