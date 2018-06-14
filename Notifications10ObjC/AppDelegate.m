@@ -25,6 +25,18 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     
     NSLog(@"didFinishLaunchingWithOptions");
+    
+    // setting up location manager
+    _locationManager = [[CLLocationManager alloc] init];
+    _locationManager.delegate = self;
+    _locationManager.desiredAccuracy = kCLLocationAccuracyThreeKilometers;
+    [_locationManager setAllowsBackgroundLocationUpdates:YES];
+    if([_locationManager respondsToSelector:@selector(requestAlwaysAuthorization)]){
+        [_locationManager requestAlwaysAuthorization];
+    }else{
+        [_locationManager startUpdatingLocation];
+    }
+    
       _deviceKey = [AppDelegate key];
 
     application.applicationIconBadgeNumber = 0;
@@ -416,6 +428,40 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
     
     completionHandler();
     
+}
+
+#pragma mark - Lolcation Update
+- (void)locationManager:(CLLocationManager *)manager didFailWithError:(NSError *)error
+{
+    NSLog(@"didFailWithError: %@", error);
+    UIAlertController *errorAlert = [[UIAlertView alloc]
+                               initWithTitle:@"Error" message:@"Failed to Get Your Location" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+   // [errorAlert show];
+}
+-(void)locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status
+{
+    switch (status) {
+        case kCLAuthorizationStatusNotDetermined:
+        case kCLAuthorizationStatusRestricted:
+        case kCLAuthorizationStatusDenied:
+        {
+            // do some error handling
+        }
+            break;
+        default:{
+            [_locationManager startUpdatingLocation];
+        }
+            break;
+    }
+}
+- (void)locationManager:(CLLocationManager *)manager
+     didUpdateLocations:(NSArray *)locations
+{
+    CLLocation *location = [locations lastObject];
+   // userLatitude =  [NSString stringWithFormat:@"%f", location.coordinate.latitude] ;
+  //  userLongitude =  [NSString stringWithFormat:@"%f",location.coordinate.longitude];
+    NSLog(@"User location %@",location);
+   // [_locationManager stopUpdatingLocation];
 }
 
 

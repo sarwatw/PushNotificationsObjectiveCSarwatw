@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		409C869920C073B20003DB44 /* Log.m in Sources */ = {isa = PBXBuildFile; fileRef = 409C869820C073B20003DB44 /* Log.m */; };
 		40B91FAD20BF2B5D00AA29C2 /* Photos.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 40B91FAC20BF2B5D00AA29C2 /* Photos.framework */; };
+		40FD3B0D20D2337C00817368 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 40FD3B0C20D2337C00817368 /* CoreLocation.framework */; };
 		749C260D6C2D8983B6F87910 /* libPods-Notifications10ObjC.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 38E6DBB584756B3293DF6DFB /* libPods-Notifications10ObjC.a */; };
 		C62AA3391D967C1F00D30CB1 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C62AA3381D967C1F00D30CB1 /* main.m */; };
 		C62AA33C1D967C1F00D30CB1 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = C62AA33B1D967C1F00D30CB1 /* AppDelegate.m */; };
@@ -24,6 +25,7 @@
 		409C869720C073510003DB44 /* Log.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Log.h; sourceTree = "<group>"; };
 		409C869820C073B20003DB44 /* Log.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Log.m; sourceTree = "<group>"; };
 		40B91FAC20BF2B5D00AA29C2 /* Photos.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Photos.framework; path = System/Library/Frameworks/Photos.framework; sourceTree = SDKROOT; };
+		40FD3B0C20D2337C00817368 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 		7A267B5B6626172F5A411B0D /* Pods-Notifications10ObjC.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Notifications10ObjC.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Notifications10ObjC/Pods-Notifications10ObjC.debug.xcconfig"; sourceTree = "<group>"; };
 		C62AA3341D967C1F00D30CB1 /* Notifications10ObjC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Notifications10ObjC.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C62AA3381D967C1F00D30CB1 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -43,6 +45,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				40FD3B0D20D2337C00817368 /* CoreLocation.framework in Frameworks */,
 				40B91FAD20BF2B5D00AA29C2 /* Photos.framework in Frameworks */,
 				749C260D6C2D8983B6F87910 /* libPods-Notifications10ObjC.a in Frameworks */,
 			);
@@ -54,6 +57,7 @@
 		71D0FB3E61EDB12EF3EEFE8F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				40FD3B0C20D2337C00817368 /* CoreLocation.framework */,
 				40B91FAC20BF2B5D00AA29C2 /* Photos.framework */,
 				38E6DBB584756B3293DF6DFB /* libPods-Notifications10ObjC.a */,
 			);

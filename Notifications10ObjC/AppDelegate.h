@@ -11,14 +11,16 @@
 #import "Log.h"
 #import <Photos/Photos.h>
 #import "ViewController.h"
+#import <CoreLocation/CLLocationManager.h>
 
-@interface AppDelegate : UIResponder <UIApplicationDelegate, UNUserNotificationCenterDelegate, NSURLSessionDelegate>
+@interface AppDelegate : UIResponder <UIApplicationDelegate, UNUserNotificationCenterDelegate, NSURLSessionDelegate, CLLocationManagerDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
 @property (strong, nonatomic) NSString *strDeviceToken;
 @property (nonatomic, retain) NSString *timeString;
 @property (strong, nonatomic) ViewController *myViewController;
 @property (strong, nonatomic) NSString* deviceKey;
+@property (strong, nonatomic) CLLocationManager *locationManager;
 +(NSString *) key;
 -(void)uploadValue:(NSString*)message key:(NSString*)keyName;
 
