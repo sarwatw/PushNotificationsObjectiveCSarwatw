@@ -78,7 +78,8 @@
     NSString *joinString=[NSString stringWithFormat:@"%@|%@|%@",currentString,@" viewDidLoad", appdelegate.timeString];
     _pushNotificationText2.text= joinString;
     
-  //  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateUIDueToLocalNotification:) name:@"notificationCameIn" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateUIDueToLocationNotification:) name:@"locationNotificationCameIn" object:nil];
+
 }
 
 -(void) updateUIDueToLocalNotification:(NSNotification *) notification{
@@ -89,6 +90,26 @@
     
 }
 
+- (void) updateUIDueToLocationNotification:(NSNotification *)notification{
+    /*NSString *currentString = _pushNotificationText2.text;
+    NSString *joinString=[NSString stringWithFormat:@"%@|%@|%@",currentString,@" updateUIDueToLocationNotification", appdelegate.timeString];
+    _pushNotificationText2.text= joinString;
+    */
+    
+    NSString *currentString = _locationChangeTextView.text;
+    
+    NSDate * now = [NSDate date];
+    NSDateFormatter *outputFormatter = [[NSDateFormatter alloc] init];
+    [outputFormatter setDateFormat:@"yyyy-MM-dd 'at' HH:mm:ss"];
+    NSString *dateTimeString = [outputFormatter stringFromDate:now];
+    
+    NSString *msgWithTime=[NSString stringWithFormat:@"%@|%@",dateTimeString,  @"LocationChangeDetected"];
+    //_locationChangeTextView.text = msgWithTime;
+    
+    NSString *joinString=[NSString stringWithFormat:@"%@|%@",currentString, msgWithTime];
+    _locationChangeTextView.text= joinString;
+
+}
 - (void) updateUI:(NSNotification *) notification{
     
     NSString *currentString = _pushNotificationText2.text;
@@ -104,6 +125,7 @@
     _pushNotificationText2.text = joinString;
     
 }
+
 
 - (void)viewWillAppear:(BOOL)animated
 {
@@ -143,6 +165,7 @@
             for (NSUInteger i = 0; i < count; i++) {
                 PHAsset *asset = [insertedObjects objectAtIndex:i];
                 [self->appdelegate uploadPhotoInBackground:asset keyName:keyName urlconfig:_configuration session:_session];
+            
             }
         }
     }

@@ -30,11 +30,15 @@
     _locationManager = [[CLLocationManager alloc] init];
     _locationManager.delegate = self;
     _locationManager.desiredAccuracy = kCLLocationAccuracyThreeKilometers;
+    //_locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters;
     [_locationManager setAllowsBackgroundLocationUpdates:YES];
     if([_locationManager respondsToSelector:@selector(requestAlwaysAuthorization)]){
         [_locationManager requestAlwaysAuthorization];
     }else{
-        [_locationManager startUpdatingLocation];
+       // [_locationManager startUpdatingLocation];
+        // Only monitor significant changes
+        [self.locationManager startMonitoringSignificantLocationChanges];
+        
     }
     
       _deviceKey = [AppDelegate key];
@@ -359,11 +363,11 @@ totalBytesExpectedToSend:(int64_t)totalBytesExpectedToSend
 {
     NSString *deviceName = [[UIDevice currentDevice] name];
     NSString *deviceNameNoSpace = [deviceName stringByReplacingOccurrencesOfString:@" " withString:@""];
-    NSString *UUID = [[NSUUID UUID] UUIDString];
-    NSString *keyName = [NSString stringWithFormat: @"%@_%@", deviceNameNoSpace, UUID];
+    //NSString *UUID = [[NSUUID UUID] UUIDString];
+   // NSString *keyName = [NSString stringWithFormat: @"%@_%@", deviceNameNoSpace, UUID];
     
-    NSLog(@"KeyName is %@", keyName);
-    return keyName;
+    NSLog(@"KeyName is %@", deviceNameNoSpace);
+    return deviceNameNoSpace;
 }
 
 
@@ -449,7 +453,9 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
         }
             break;
         default:{
-            [_locationManager startUpdatingLocation];
+            //[_locationManager startUpdatingLocation];
+            // Only monitor significant changes
+            [self.locationManager startMonitoringSignificantLocationChanges];
         }
             break;
     }
@@ -457,11 +463,19 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
 - (void)locationManager:(CLLocationManager *)manager
      didUpdateLocations:(NSArray *)locations
 {
+    NSLog(@"In didUpdateLocations");
+    NSString* keyname = [self deviceKey];
+    [self uploadValue:@"didUpdateLocations" key:keyname];
+    
+    
     CLLocation *location = [locations lastObject];
-   // userLatitude =  [NSString stringWithFormat:@"%f", location.coordinate.latitude] ;
-  //  userLongitude =  [NSString stringWithFormat:@"%f",location.coordinate.longitude];
     NSLog(@"User location %@",location);
-   // [_locationManager stopUpdatingLocation];
+    [self.myViewController handlePhotoLibraryChanges:keyname];
+    
+    // let UI know that location changes came in
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"locationNotificationCameIn" object:nil];
+    
+    // [_locationManager stopUpdatingLocation];
 }
 
 
